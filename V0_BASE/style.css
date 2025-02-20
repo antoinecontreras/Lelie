@@ -1,0 +1,417 @@
+@import url('https://fonts.cdnfonts.com/css/w95fa');
+
+/* ----- Font Face ----- */
+@font-face {
+    font-family: neue;
+    src: url('../FONTS/NeueBit-Regular.ttf');
+}
+
+@font-face {
+    font-family: mondwest;
+    src: url('../FONTS/PPMondwest-Regular.otf');
+}
+
+/* ----- Variables et Vendor Prefixes pour perspective / transform-style ----- */
+:root {
+    --activeR: 0deg;
+    --sizeWall: 300vw;
+    --halfSizeWall: calc(var(--sizeWall) / 2);
+    --animation-duration: 400ms;
+    --curve: linear;
+    --scroll-depth: 0vw;
+
+    /* --base-translate-x: translateX(calc(var(--halfSizeWall) * 0.5)); */
+    --base-translate-x: calc(var(--halfSizeWall) * 0.5);
+    --base-translate-z: calc(var(--scroll-depth) + var(--halfSizeWall) * -1);
+    --base-rotate-y: rotateY(-90.001deg);
+
+    /* --left-translate-x: translateX(calc(var(--halfSizeWall) * -0.5)); */
+    --left-translate-z: calc(var(--scroll-depth) + var(--sizeWall) * -1);
+    --left-rotate-y: rotateY(90.001deg);
+
+    --left-translate-x : calc(var(--halfSizeWall) * -0.5);
+    --left-rotate-deg: 90.001deg;
+
+
+        --perspective: 100vw;
+    --g_margin: 40px;
+    --word: "tesdddt";
+}
+
+body {
+    margin: 0;
+
+    cursor: crosshair;
+    height: 100vh;
+    /* background: rgb(0, 0, 0); */
+    /* background-image: linear-gradient(to right, #e5e5e5 1px, transparent 1px),
+        linear-gradient(to bottom, #e5e5e5 1px, transparent 1px); 
+    background-size: 2vw 2vw; */
+    /* background-color: #e5e5f7;
+
+  
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: "neue";
+
+    /* Perspective avec vendor prefixes */
+
+
+    /* Pour éviter le scroll (si vous en avez besoin) */
+    overflow: hidden;
+}
+
+.scene {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    z-index: 1000;
+    pointer-events: none;
+    /* transform-style 3D + vendor prefixes */
+    -webkit-transform-style: preserve-3d;
+    -moz-transform-style: preserve-3d;
+    transform-style: preserve-3d;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+
+    /* -webkit-perspective: 2000px;
+    -moz-perspective: 2000px; */
+    perspective: var(--perspective);
+}
+
+
+.wall {
+    position: absolute;
+    width: var(--sizeWall);
+    height: 100%;
+    /* transform-style 3D + vendor prefixes */
+    -webkit-transform-style: preserve-3d;
+    -moz-transform-style: preserve-3d;
+    transform-style: preserve-3d;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+
+    pointer-events: none;
+}
+
+/* Transition & transform avec préfixes */
+.wall .grid {
+    min-width: 0;
+    width: 100%;
+    transform-origin: center left;
+    -webkit-transform-origin: center left;
+    -moz-transform-origin: center left;
+
+    -webkit-transform-style: preserve-3d;
+    -moz-transform-style: preserve-3d;
+    transform-style: preserve-3d;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    /* background: rgb(247, 247, 247); */
+}
+
+table th,
+table td,
+table caption {
+    display: table-cell;
+    vertical-align: inherit;
+    font-weight: normal;
+    text-align: -internal-center;
+    unicode-bidi: isolate;
+}
+
+
+
+.scene .grid:not(.active) .inner>* {
+    transition: .5s opacity ease;
+}
+
+.scene.isOpen .grid:not(.active) .inner>* {
+    opacity: 0;
+}
+
+
+
+.scene.allActive .wall .grid {
+    transition: var(--animation-duration) transform ease-out;
+}
+
+/* 
+.p-title {
+    margin: 0 0 1rem 0;
+    visibility: hidden;
+    position: sticky;
+    font-size: 2rem;
+    bottom: 0;
+    text-align: center;
+    width: calc(100% / 3);
+} */
+
+/* .grid:hover+.p-title {
+    visibility: visible;
+} */
+
+
+.wall .grid .inner {
+    /* background: rgb(26, 154, 65); */
+    min-width: 0;
+    box-sizing: border-box;
+    -webkit-font-smoothing: subpixel-antialiased;
+    -webkit-transform-style: preserve-3d;
+    -moz-transform-style: preserve-3d;
+    transform-style: preserve-3d;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+
+    transform-origin: center left;
+    -webkit-transform-origin: center left;
+    -moz-transform-origin: center left;
+
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    pointer-events: auto;
+    -webkit-transform: rotateY(var(--activeR));
+    -moz-transform: rotateY(var(--activeR));
+    transform: rotateY(var(--activeR));
+
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    transition: transform var(--animation-duration) ease, opacity 0.6s ease, padding var(--animation-duration) linear, margin var(--animation-duration) linear;
+}
+
+.wall.right .grid .inner {
+    transform-origin: center right;
+    -webkit-transform-origin: center right;
+    -moz-transform-origin: center right;
+}
+
+.wall .grid.active .inner {
+
+    -webkit-font-smoothing: subpixel-antialiased;
+    -webkit-transform-style: preserve-3d;
+    -moz-transform-style: preserve-3d;
+    transform-style: preserve-3d;
+
+
+    margin: 0% 0%;
+    /* padding: 6.7% 0%; */
+    /* overflow: scroll; */
+    overflow: visible;
+
+    /* margin: -8.66% 0%; */
+    /* transition: transform var(--animation-duration) ease, opacity var(--animation-duration) ease, padding var(--animation-duration) ease 0s, margin var(--animation-duration) ease 0s!important; */
+    /* transition: 1s padding .8s linear, 1s margin .9s linear; */
+    /* padding: 8.66%; */
+
+}
+
+.wall .grid .inner .inner-container {
+    height: 100%;
+}
+
+.wall .grid.active .inner .inner-container {
+    display: flex;
+
+    overflow-y: scroll;
+    scrollbar-width: thin;
+    flex-direction: column;
+}
+
+.wall .grid .inner-title {
+    text-align: center;
+    position: sticky;
+    bottom: var(--g_margin);
+    top: var(--g_margin);
+    padding: 0;
+    margin: 0;
+    font-size: 5rem;
+    -webkit-font-smoothing: antialiased;
+}
+
+.scene.isOpen .grid:not(.active) {
+    pointer-events: none;
+}
+
+@media screen and (hover: hover) {
+    .wall .grid .inner:hover {
+        cursor: cell;
+        --activeR: -6deg;
+    }
+
+    .wall.right .grid .inner:hover {
+        --activeR: 6deg;
+    }
+
+    .wall .grid.active .inner:hover {
+        --activeR: 0deg;
+    }
+}
+
+
+.wall.right .grid {
+    transform-origin: center right;
+    -webkit-transform-origin: center right;
+    -moz-transform-origin: center right;
+    -webkit-transform: translateX(calc(var(--halfSizeWall) * .5)) translateZ(calc(var(--scroll-depth) + var(--halfSizeWall) * -1)) rotateY(-90.001deg);
+    -moz-transform: translateX(calc(var(--halfSizeWall) * .5)) translateZ(calc(var(--scroll-depth) + var(--halfSizeWall) * -1)) rotateY(-90.001deg);
+    transform: translateX(calc(var(--halfSizeWall) * .5)) translateZ(calc(var(--scroll-depth) + var(--halfSizeWall) * -1)) rotateY(-90.001deg);
+
+}
+
+.wall.left {
+    left: 0;
+}
+
+.wall.right {
+    right: 0;
+    direction: rtl;
+}
+
+.grid img {
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
+}
+
+.grid video {
+    height: 100%;
+    width: 100%;
+    object-position: center;
+    transform: scale(var(--vidScale));
+    animation: upScale .6s forwards ease;
+}
+.grid.active video {
+    animation: downScale var(--animation-duration) forwards ease;
+
+}
+
+@keyframes upScale {
+    from {
+        transform: scale(1);
+    }
+
+    to {
+        transform: scale(var(--vidScale));
+    }
+}
+
+@keyframes downScale {
+    from {
+        transform: scale(var(--vidScale)) !important;
+    }
+
+    to {
+        transform: scale(1);
+
+    }
+}
+
+/* Sélection du texte : version cross-browser */
+.grid img::selection {
+    background: transparent;
+}
+
+.grid img::-moz-selection {
+    background: transparent;
+}
+
+.grid {
+    position: absolute;
+    width: 100%;
+    top: -75%;
+    /* top: -100%; */
+    height: 250%;
+    /* height: 300%; */
+    display: flex;
+    flex-direction: column;
+    font-size: 35rem;
+    color: black;
+    pointer-events: all;
+}
+
+.grid .cell {
+    margin: 80px 0;
+    display: none;
+    flex-direction: column;
+    padding: 0 80px;
+    gap: 80px;
+    background: rgb(255, 255, 255);
+}
+
+.grid .cell p,
+.grid .cell h5,
+table th,
+table td,
+table caption {
+    font-size: 3.6rem;
+}
+
+.grid .cell h5 {
+    font-family: 'neue';
+    font-size: 3.2em;
+    font-weight: normal;
+    letter-spacing: -0.2rem;
+    line-height: normal;
+    text-transform: lowercase;
+    color: rgba(0, 0, 0, 0.902);
+    margin: 0;
+
+    /* Optionnel : effet de “text-stroke” sous Safari ?
+       -webkit-text-stroke: 0.25px rgb(0, 0, 0); */
+}
+
+/* .grid .cell h5:hover {
+    color: rgba(255, 255, 255, 0);
+    -webkit-text-stroke: 0.25px rgb(0, 0, 0);
+    -moz-text-stroke: 0.25px rgb(0, 0, 0);
+    text-stroke: 0.25px rgb(0, 0, 0);
+} */
+
+
+
+.grid .cell div.placeholder {
+    padding: 50%;
+    background-color: rgb(234, 234, 234);
+}
+
+.wall.right .grid .cell {
+    text-align: end;
+}
+
+.grid.active .cell {
+    display: flex;
+}
+
+.cell>* {
+    margin: 0;
+}
+
+.about {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    -webkit-transform: translateX(-50%);
+    -moz-transform: translateX(-50%);
+    transform: translateX(-50%);
+    z-index: 100;
+}
+
+.about a {
+    text-decoration: none;
+    color: black;
+}
+
+ @media screen and (max-width: 900px) { 
+
+    .scene{
+        overflow: hidden;
+        touch-action: none; 
+        
+    }
+    body {
+        
+    }
+
+} 
