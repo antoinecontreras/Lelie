@@ -19,7 +19,8 @@ function createMatrix(transformStr) {
  * 2) Variables globales
  ***************************************************/
 let scrollDepth = 0;
-const scrollFactor = 0.1; // Ajuste la sensibilité du "scroll" (wheel/touch)
+let scrollFactor = 0.1; // Ajuste la sensibilité du "scroll" (wheel/touch)
+// let isHoverableDevice = false;
 let lastCheckTime = 0;
 let scrollDirection = "down";
 
@@ -49,7 +50,6 @@ let currentPlayingVideo = null;
  * 3) handleWheelEvent (desktop "wheel" ou "mousewheel")
  ***************************************************/
 function handleWheelEvent(event) {
-  console.log("object");
   if (!isScrolling) return;
   if (event.preventDefault) event.preventDefault();
 
@@ -78,25 +78,16 @@ function handleWheelEvent(event) {
   }
 }
 
-/***************************************************
- * 4) Listeners desktop + mobile
- ***************************************************/
-/* Desktop wheel */
-window.addEventListener("wheel", handleWheelEvent, { passive: false });
-window.addEventListener("mousewheel", handleWheelEvent, { passive: false });
-window.addEventListener("DOMMouseScroll", handleWheelEvent, { passive: false });
-
-/* Mobile "touchstart" => On peut l'utiliser pour détecter tap/clic */
-window.addEventListener("touchstart", handleTouchStart, { passive: false });
-window.addEventListener("touchmove", handleTouchMove, { passive: false });
-/* Desktop "click" */
-window.addEventListener("click", handleClick);
-
 /* Resize => updateVideoScale si besoin */
 window.addEventListener("resize", updateVideoScale);
 
 /* Au load, on peut init nos vidéos, etc. */
 window.addEventListener("load", () => {
+  const isHoverableDevice = window.matchMedia(
+    "(hover: hover) and (pointer: fine)"
+  ).matches;
+  scrollFactor = isHoverableDevice ? 0.1 : 2.5;
+  isHoverableDevice ? loadDesktop() : loadMobile();
   const vids = document.querySelectorAll("video");
   vids.forEach((vid) => {
     vid.autoplay = false;
@@ -104,6 +95,19 @@ window.addEventListener("load", () => {
   });
   updateVideoScale();
 });
+
+function loadMobile() {
+  console.log("---MOBILE---");
+  window.addEventListener("touchstart", handleTouchStart, { passive: false });
+  window.addEventListener("touchmove", handleTouchMove, { passive: false });
+}
+function loadDesktop() {
+  console.log("---DESKTOP---");
+  window.addEventListener("wheel", handleWheelEvent, { passive: false });
+  // window.addEventListener("mousewheel", handleWheelEvent, { passive: false });
+  // window.addEventListener("DOMMouseScroll", handleWheelEvent, { passive: false });
+  window.addEventListener("click", handleClick);
+}
 
 /***************************************************
  * 5) detectOutOfFrame : pour repositionner le mur infini
@@ -284,8 +288,8 @@ function handleTouchMove(e) {
 
     // Ajuste scrollDepth
     scrollDepth += delta;
-    if (scrollDepth < 0) {
-      // scrollDepth = 0; // si on veut empêcher d’aller au-dessus
+    if (scrollDepth > 0) {
+      scrollDepth = 0; // si on veut empêcher d’aller au-dessus
     }
 
     // Par exemple, on applique la variable CSS
