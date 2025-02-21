@@ -19,7 +19,7 @@ function createMatrix(transformStr) {
  * 2) Variables globales
  ***************************************************/
 let scrollDepth = 0;
-const scrollFactor = 0.1;  // Ajuste la sensibilité du "scroll" (wheel/touch)
+const scrollFactor = 0.1; // Ajuste la sensibilité du "scroll" (wheel/touch)
 let lastCheckTime = 0;
 let scrollDirection = "down";
 
@@ -28,7 +28,7 @@ const g_duration = 400; // durée anim
 
 // Grilles left/right
 const gridsRight = document.querySelectorAll(".right .grid");
-const gridsLeft  = document.querySelectorAll(".left .grid");
+const gridsLeft = document.querySelectorAll(".left .grid");
 const totalGrids = gridsRight.length;
 
 // Seuils de détection
@@ -37,6 +37,7 @@ const THRESHOLD_DOWN_MAX = -2500;
 const THRESHOLD_DOWN_MIN = -3500;
 
 // Contrôle du scroll + ouvertures
+let startY = 0;
 let isScrolling = true;
 let isOpen = false;
 let openedGrid = null; // { grid, inner } quand une grille est ouverte
@@ -48,6 +49,7 @@ let currentPlayingVideo = null;
  * 3) handleWheelEvent (desktop "wheel" ou "mousewheel")
  ***************************************************/
 function handleWheelEvent(event) {
+  console.log("object");
   if (!isScrolling) return;
   if (event.preventDefault) event.preventDefault();
 
@@ -64,7 +66,10 @@ function handleWheelEvent(event) {
     scrollDepth = 0;
   }
 
-  document.documentElement.style.setProperty("--scroll-depth", `${-scrollDepth}vw`);
+  document.documentElement.style.setProperty(
+    "--scroll-depth",
+    `${-scrollDepth}vw`
+  );
 
   const now = Date.now();
   if (now - lastCheckTime > 300) {
@@ -82,7 +87,8 @@ window.addEventListener("mousewheel", handleWheelEvent, { passive: false });
 window.addEventListener("DOMMouseScroll", handleWheelEvent, { passive: false });
 
 /* Mobile "touchstart" => On peut l'utiliser pour détecter tap/clic */
-window.addEventListener("touchstart", handleClick, { passive: true });
+window.addEventListener("touchstart", handleTouchStart, { passive: false });
+window.addEventListener("touchmove", handleTouchMove, { passive: false });
 /* Desktop "click" */
 window.addEventListener("click", handleClick);
 
@@ -112,13 +118,18 @@ function detectOutOfFrame(direction) {
 
       if (direction === "up" && zValue > THRESHOLD_UP) {
         repositionUp(gridRight);
-      }
-      else if (direction === "down" &&
-               zValue < THRESHOLD_DOWN_MAX &&
-               zValue > THRESHOLD_DOWN_MIN) {
+      } else if (
+        direction === "down" &&
+        zValue < THRESHOLD_DOWN_MAX &&
+        zValue > THRESHOLD_DOWN_MIN
+      ) {
         // On récupère la grille la plus "lointaine"
-        const targetSnap = Math.max(...[...gridsRight].map((g) => Number(g.dataset.snap)));
-        const targetGrid = [...gridsRight].find((g) => Number(g.dataset.snap) === targetSnap);
+        const targetSnap = Math.max(
+          ...[...gridsRight].map((g) => Number(g.dataset.snap))
+        );
+        const targetGrid = [...gridsRight].find(
+          (g) => Number(g.dataset.snap) === targetSnap
+        );
         repositionDown(targetGrid);
       }
     }
@@ -133,7 +144,8 @@ function repositionUp(gridRight) {
   const newSnap = oldSnap + totalGrids;
   repositionGrid(gridRight, newSnap, "right", false);
 
-  const leftIndex = ((newSnap % gridsLeft.length) + gridsLeft.length) % gridsLeft.length;
+  const leftIndex =
+    ((newSnap % gridsLeft.length) + gridsLeft.length) % gridsLeft.length;
   const gridLeft = gridsLeft[leftIndex];
   if (!gridLeft) return;
   repositionGrid(gridLeft, newSnap, "left", false);
@@ -144,7 +156,8 @@ function repositionDown(gridRight) {
   const newSnap = oldSnap - gridsRight.length;
   repositionGrid(gridRight, newSnap, "right", false);
 
-  const leftIndex = ((newSnap % gridsLeft.length) + gridsLeft.length) % gridsLeft.length;
+  const leftIndex =
+    ((newSnap % gridsLeft.length) + gridsLeft.length) % gridsLeft.length;
   const gridLeft = gridsLeft[leftIndex];
   if (!gridLeft) return;
   repositionGrid(gridLeft, newSnap, "left", false);
@@ -157,8 +170,10 @@ function repositionGrid(gridEl, newSnap, side, instant = false) {
   gridEl.dataset.snap = newSnap;
   const factor = -1 * newSnap;
 
-  const baseTranslateX = side === "right" ? "var(--base-translate-x)" : "var(--left-translate-x)";
-  const baseRotateY    = side === "right" ? "var(--base-rotate-y)"   : "var(--left-rotate-y)";
+  const baseTranslateX =
+    side === "right" ? "var(--base-translate-x)" : "var(--left-translate-x)";
+  const baseRotateY =
+    side === "right" ? "var(--base-rotate-y)" : "var(--left-rotate-y)";
 
   const finalTransform = `
     translateX(${baseTranslateX})
@@ -212,13 +227,16 @@ function focusOnGrid({ gridElement, desiredZ, disableScroll = false, scene }) {
   if (scrollDepth > 0) scrollDepth = 0;
 
   scene.classList.add("allActive");
-  document.documentElement.style.setProperty("--scroll-depth", `${-scrollDepth}vw`);
+  document.documentElement.style.setProperty(
+    "--scroll-depth",
+    `${-scrollDepth}vw`
+  );
 
   setTimeout(() => {
     scene.classList.remove("allActive");
     const vid = gridElement.querySelector("video");
     if (vid && vid.paused) {
-      vid.play().catch(err => console.log("Vid play error:", err));
+      vid.play().catch((err) => console.log("Vid play error:", err));
       currentPlayingVideo = vid;
     }
   }, g_duration);
@@ -243,6 +261,50 @@ function toggleVideo(gridElement) {
 /***************************************************
  * 8) handleClick : Ouvrir/fermer la grille
  ***************************************************/
+function handleTouchStart(e) {
+  if (e.touches.length === 1) {
+    startY = e.touches[0].clientY;
+  }
+}
+function handleTouchMove(e) {
+  if (!isScrolling) return;
+  e.preventDefault();
+
+  // s’il y a toujours 1 doigt
+  if (e.touches.length === 1) {
+    let currentY = e.touches[0].clientY;
+    let deltaY = startY - currentY;
+    // (startY - currentY) => si c’est positif, on va "down"; si négatif, "up".
+
+    // Applique le scrollFactor
+    const delta = deltaY * scrollFactor;
+
+    // Détermine la direction
+    const scrollDirection = delta > 0 ? "down" : "up";
+
+    // Ajuste scrollDepth
+    scrollDepth += delta;
+    if (scrollDepth < 0) {
+      // scrollDepth = 0; // si on veut empêcher d’aller au-dessus
+    }
+
+    // Par exemple, on applique la variable CSS
+    document.documentElement.style.setProperty(
+      "--scroll-depth",
+      `${-scrollDepth}vw`
+    );
+
+    // Limite la fréquence
+    const now = Date.now();
+    if (now - lastCheckTime > 300) {
+      detectOutOfFrame(scrollDirection);
+      lastCheckTime = now;
+    }
+
+    // Met à jour startY pour le prochain move
+    startY = currentY;
+  }
+}
 function handleClick(e) {
   const scene = document.querySelector(".scene");
   const grid = e.target.closest(".grid");
@@ -253,10 +315,10 @@ function handleClick(e) {
   // S'il y a déjà une grille ouverte et c'est pas la même
   if (isOpen && openedGrid && openedGrid.grid !== grid) {
     // on ferme l'ancienne
-    closeScroll({ 
-      grid: openedGrid.grid, 
-      inner: openedGrid.inner, 
-      scene 
+    closeScroll({
+      grid: openedGrid.grid,
+      inner: openedGrid.inner,
+      scene,
     });
   }
 
@@ -265,7 +327,7 @@ function handleClick(e) {
     grid.classList.add("active");
     openGrid({ grid, inner, scene });
     openedGrid = { grid, inner };
-  } 
+  }
   // sinon si c'est déjà ouvert => on ferme
   else if (isOpen && openedGrid.grid === grid) {
     // Vérifie si on clique sur bord => on ferme
@@ -295,7 +357,7 @@ function openGrid({ grid, inner, scene }) {
         gridElement: grid,
         desiredZ: -150,
         disableScroll: true,
-        scene
+        scene,
       });
     },
   });
@@ -339,7 +401,7 @@ function closeGrid({ grid, inner, scene }) {
       isOpen = false;
       inner.style.transform = "";
       inner.style.width = "100%";
-      toggleVideo(inner);  // Pause vidéo
+      toggleVideo(inner); // Pause vidéo
       simulateScroll(-100);
       grid.classList.remove("active");
     },
@@ -394,7 +456,10 @@ function simulateScroll(deltaY) {
   scrollDepth += delta;
   if (scrollDepth > 0) scrollDepth = 0;
 
-  document.documentElement.style.setProperty("--scroll-depth", `${-scrollDepth}vw`);
+  document.documentElement.style.setProperty(
+    "--scroll-depth",
+    `${-scrollDepth}vw`
+  );
   detectOutOfFrame(scrollDirection);
 }
 
@@ -403,7 +468,7 @@ function simulateScroll(deltaY) {
  ***************************************************/
 const miniVideos = document.querySelectorAll(".grid video");
 miniVideos.forEach((vid) => {
-  vid.loop  = true;
+  vid.loop = true;
   vid.muted = true;
   vid.addEventListener("mouseenter", handleVideoMouseEnter);
   vid.addEventListener("mouseleave", handleVideoMouseLeave);
@@ -417,7 +482,7 @@ function handleVideoMouseEnter(e) {
     currentPlayingVideo.pause();
     currentPlayingVideo = null;
   }
-  vid.play().catch(err => console.log("Impossible de lancer la vidéo:", err));
+  vid.play().catch((err) => console.log("Impossible de lancer la vidéo:", err));
   currentPlayingVideo = vid;
 }
 
