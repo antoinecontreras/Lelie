@@ -38,7 +38,11 @@ const THRESHOLD_DOWN_MAX = -2500;
 const THRESHOLD_DOWN_MIN = -3500;
 
 // Contrôle du scroll + ouvertures
+
 let startY = 0;
+let velocity = 0; // vitesse
+let friction = 0.92; // chaque frame, velocity *= friction
+let isTouching = false;
 let isScrolling = true;
 let isOpen = false;
 let openedGrid = null; // { grid, inner } quand une grille est ouverte
@@ -49,13 +53,13 @@ let currentPlayingVideo = null;
 /***************************************************
  * 3) handleWheelEvent (desktop "wheel" ou "mousewheel")
  ***************************************************/
-function handleWheelEvent(event) {
+function handleWheelEvent(e) {
   if (!isScrolling) return;
-  if (event.preventDefault) event.preventDefault();
+  if (e.preventDefault) e.preventDefault();
 
-  let deltaY = event.deltaY;
+  let deltaY = e.deltaY;
   if (typeof deltaY === "undefined") {
-    deltaY = -event.wheelDelta || event.detail;
+    deltaY = -e.wheelDelta || e.detail;
   }
 
   const delta = deltaY * scrollFactor;
@@ -86,7 +90,7 @@ window.addEventListener("load", () => {
   const isHoverableDevice = window.matchMedia(
     "(hover: hover) and (pointer: fine)"
   ).matches;
-  scrollFactor = isHoverableDevice ? 0.1 : 2.5;
+  scrollFactor = isHoverableDevice ? 0.1 : 1.5;
   isHoverableDevice ? loadDesktop() : loadMobile();
   const vids = document.querySelectorAll("video");
   vids.forEach((vid) => {
@@ -100,6 +104,7 @@ function loadMobile() {
   console.log("---MOBILE---");
   window.addEventListener("touchstart", handleTouchStart, { passive: false });
   window.addEventListener("touchmove", handleTouchMove, { passive: false });
+  window.addEventListener("touchend", handleTouchEnd, { passive: false });
 }
 function loadDesktop() {
   console.log("---DESKTOP---");
@@ -108,7 +113,42 @@ function loadDesktop() {
   // window.addEventListener("DOMMouseScroll", handleWheelEvent, { passive: false });
   window.addEventListener("click", handleClick);
 }
+function inertiaLoop() {
+  if (isTouching) return;
 
+  // On “freine” la vitesse
+  velocity *= friction;
+
+  // Applique la vitesse freinée au scrollDepth
+  scrollDepth += velocity;
+
+  // Bloque si on dépasse le “haut”
+  if (scrollDepth > 0) {
+    scrollDepth = 0;
+    velocity = 0;
+  }
+
+  document.documentElement.style.setProperty(
+    "--scroll-depth",
+    `${-scrollDepth}vw`
+  );
+
+  // Détection hors-champ
+  // (On peut le faire moins souvent si on veut)
+  if (Math.abs(velocity) > 0.01) {
+    // continue tant qu'on a de la vitesse
+    const dir = velocity > 0 ? "down" : "up";
+    const now = Date.now();
+    if (now - lastCheckTime > 300) {
+      detectOutOfFrame(dir);
+      lastCheckTime = now;
+    }
+    requestAnimationFrame(inertiaLoop);
+  } else {
+    // Vitesse trop faible => on arrête
+    velocity = 0;
+  }
+}
 /***************************************************
  * 5) detectOutOfFrame : pour repositionner le mur infini
  ***************************************************/
@@ -268,46 +308,49 @@ function toggleVideo(gridElement) {
 function handleTouchStart(e) {
   if (e.touches.length === 1) {
     startY = e.touches[0].clientY;
+    isTouching = true;
+    velocity = 0;
   }
 }
 function handleTouchMove(e) {
   if (!isScrolling) return;
   e.preventDefault();
 
-  // s’il y a toujours 1 doigt
   if (e.touches.length === 1) {
     let currentY = e.touches[0].clientY;
     let deltaY = startY - currentY;
-    // (startY - currentY) => si c’est positif, on va "down"; si négatif, "up".
+    // startY - currentY => si positif, on “descend” => direction = "down"
 
-    // Applique le scrollFactor
-    const delta = deltaY * scrollFactor;
+    // On définit la vitesse instantanée
+    // (plus tard, on laissera la friction l'atténuer)
+    velocity = deltaY * scrollFactor;
 
-    // Détermine la direction
-    const scrollDirection = delta > 0 ? "down" : "up";
-
-    // Ajuste scrollDepth
-    scrollDepth += delta;
+    // On applique immédiatement cette vitesse à scrollDepth
+    scrollDepth += velocity;
     if (scrollDepth > 0) {
-      scrollDepth = 0; // si on veut empêcher d’aller au-dessus
+      scrollDepth = 0;
     }
 
-    // Par exemple, on applique la variable CSS
     document.documentElement.style.setProperty(
       "--scroll-depth",
       `${-scrollDepth}vw`
     );
 
-    // Limite la fréquence
+    // Détection hors-champ (limité par lastCheckTime)
     const now = Date.now();
     if (now - lastCheckTime > 300) {
+      const scrollDirection = deltaY > 0 ? "down" : "up";
       detectOutOfFrame(scrollDirection);
       lastCheckTime = now;
     }
 
-    // Met à jour startY pour le prochain move
+    // Met à jour startY
     startY = currentY;
   }
+}
+function handleTouchEnd(e) {
+  isTouching = false;
+  requestAnimationFrame(inertiaLoop);
 }
 function handleClick(e) {
   const scene = document.querySelector(".scene");
