@@ -20,8 +20,8 @@
     <div class="wall left">
       <div data-snap="0" class="grid"
         style="transform: translateX(var(--left-translate-x)) translateZ(calc(var(--scroll-depth) + var(--sizeWall) * -0)) rotateY(var(--left-rotate-deg));">
-        <div class="inner">
-          <video src="../IMG/01.mp4" muted loop playsinline poster="../IMG/frame_01.jpg"></video>
+        <div class="inner video-container" style="background-image: url('../IMG/frame_01.jpg');">
+          <video src="../IMG/01.mp4" muted loop playsinline preload="auto" class="hidden-video" ></video>
 
           <p class="inner-title">Projet 1</p>
           <div class="cell">
@@ -31,16 +31,26 @@
       </div>
       <div data-snap="1" class="grid"
         style="--word: 'TEEEEEST'; transform : translateX(var(--left-translate-x)) translateZ(calc(var(--scroll-depth) + var(--sizeWall) * -1)) rotateY(var(--left-rotate-deg));  ">
-        <div class="inner">
-          <div class="inner-container">
-            <video src="../IMG/02.mp4" muted loop playsinline poster="../IMG/frame_02.jpg"></video>
+        <div class="inner video-container" style="background-image: url('../IMG/frame_02.jpg');">
+         <div class="inner-container">
+          <video src="../IMG/02.mp4" muted loop playsinline preload="auto" class="hidden-video" ></video>
 
-            <p class="inner-title">Projet 2</p>
-            <div class="cell">
-
-            </div>
+          <p class="inner-title">Projet 2</p>
+          <div class="cell">
+           
+            <p>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Optio consectetur dicta similique molestiae nisi rem cumque, est veniam laudantium aspernatur autem illum repellat blanditiis veritatis? Vel, repudiandae? Quia, animi temporibus.</p>
+            <p>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Optio consectetur dicta similique molestiae nisi rem cumque, est veniam laudantium aspernatur autem illum repellat blanditiis veritatis? Vel, repudiandae? Quia, animi temporibus.</p>
+            <p>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Optio consectetur dicta similique molestiae nisi rem cumque, est veniam laudantium aspernatur autem illum repellat blanditiis veritatis? Vel, repudiandae? Quia, animi temporibus.</p>
           </div>
-
+         </div>
+        </div>
+      </div>
+      <div data-snap="2" class="grid"
+        style="transform: translateX(var(--left-translate-x)) translateZ(calc(var(--scroll-depth) + var(--sizeWall) * -2)) rotateY(var(--left-rotate-deg));">
+        <div class="inner video-container" style="background-image: url('../IMG/frame_03.jpg');">
+          <video src="../IMG/03.mp4" muted loop playsinline preload="auto" class="hidden-video" ></video>
+          <div class="cell">
+          </div>
         </div>
       </div>
 
@@ -50,21 +60,28 @@
     <div class="wall right">
       <div data-snap="0" class="grid"
         style="transform: translateX(var(--base-translate-x)) translateZ(calc(var(--scroll-depth) + var(--sizeWall) * -0)) var(--base-rotate-y);">
-        <div class="inner">
-          <video src="../IMG/03.mp4" muted loop playsinline poster="../IMG/frame_03.jpg"></video>
+        <div class="inner video-container" style="background-image: url('../IMG/frame_04.jpg');">
+          <video src="../IMG/04.mp4" muted loop playsinline preload="auto" class="hidden-video" ></video>
           <div class="cell">
           </div>
         </div>
       </div>
       <div data-snap="1" class="grid"
         style="transform: translateX(var(--base-translate-x)) translateZ(calc(var(--scroll-depth) + var(--sizeWall) * -1)) var(--base-rotate-y);">
-        <div class="inner">
-          <video src="../IMG/04.mp4" muted loop playsinline poster="../IMG/frame_04.jpg"></video>
+        <div class="inner video-container" style="background-image: url('../IMG/frame_01.jpg');">
+          <video src="../IMG/01.mp4" muted loop playsinline preload="auto" class="hidden-video" ></video>
           <div class="cell">
           </div>
         </div>
       </div>
-
+      <div data-snap="2" class="grid"
+        style="transform: translateX(var(--base-translate-x)) translateZ(calc(var(--scroll-depth) + var(--sizeWall) * -2)) var(--base-rotate-y);">
+        <div class="inner video-container" style="background-image: url('../IMG/frame_02.jpg');">
+          <video src="../IMG/02.mp4" muted loop playsinline preload="auto" class="hidden-video" ></video>
+          <div class="cell">
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </body>

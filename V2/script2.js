@@ -363,7 +363,7 @@ function handleClick(e) {
   const scene = document.querySelector(".scene");
   const grid = e.target.closest(".grid");
   const inner = e.target.closest(".inner");
-  console.log(e.target);
+
   if (!grid) return;
 
   // S'il y a déjà une grille ouverte et c'est pas la même
@@ -418,7 +418,6 @@ function openGrid({ grid, inner, scene }) {
 }
 
 function closeScroll({ grid, inner, scene }) {
-  console.log(inner);
   const scrollZone = inner.querySelector(".inner-container");
   if (!scrollZone) {
     closeGrid({ grid, inner, scene });

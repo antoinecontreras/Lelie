@@ -303,7 +303,7 @@ function focusOnGrid({ gridElement, desiredZ, disableScroll = false, scene }) {
 function toggleVideo(gridElement) {
   const vid = gridElement.querySelector("video");
   if (vid && !vid.matches(":hover")) {
-    vid.pause();
+    // vid.pause();
     // vid.currentTime = 0;
   }
   isScrolling = true;
@@ -363,7 +363,7 @@ function handleClick(e) {
   const scene = document.querySelector(".scene");
   const grid = e.target.closest(".grid");
   const inner = e.target.closest(".inner");
-  console.log(e.target);
+
   if (!grid) return;
 
   // S'il y a déjà une grille ouverte et c'est pas la même
@@ -418,7 +418,6 @@ function openGrid({ grid, inner, scene }) {
 }
 
 function closeScroll({ grid, inner, scene }) {
-  console.log(inner);
   const scrollZone = inner.querySelector(".inner-container");
   if (!scrollZone) {
     closeGrid({ grid, inner, scene });
@@ -545,7 +544,7 @@ function handleVideoMouseEnter(e) {
   if (!(vid instanceof HTMLVideoElement)) return;
 
   if (currentPlayingVideo && currentPlayingVideo !== vid) {
-    currentPlayingVideo.pause();
+    // currentPlayingVideo.pause();
     currentPlayingVideo = null;
   }
   vid.play().catch((err) => console.log("Impossible de lancer la vidéo:", err));
@@ -559,7 +558,7 @@ function handleVideoMouseLeave(e) {
   if (!gridParent) return;
 
   if (!gridParent.classList.contains("active")) {
-    vid.pause();
+    // vid.pause();
     if (currentPlayingVideo === vid) {
       currentPlayingVideo = null;
     }
