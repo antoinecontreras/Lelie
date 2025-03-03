@@ -28,7 +28,9 @@
     --g_margin: 40px;
     --word: "tesdddt";
 }
-
+html{
+    overflow: hidden;
+}
 body {
     height: 100dvh;
     margin: 0;
@@ -240,6 +242,8 @@ table th {
 
 .scene.isOpen+.projects {
     display: block;
+    overflow: scroll;
+    max-height: 100dvh;
 }
 
 .projects {
@@ -257,11 +261,11 @@ table th {
     position: relative;
 }
 
-.projects .project:nth-child(1) {
+.projects .project.p-focus {
     height: 200%;
 }
 
-.projects .project:nth-child(1) video.flat-video {
+.projects .project.p-focus video.flat-video {
     position: sticky;
 }
 
@@ -273,19 +277,18 @@ table th {
 
 .projects .project .flat-content {
     position: relative;
-    background: linear-gradient(45deg, black, transparent);
+    background: black;
     width: 50%;
     height: 100%;
 }
 
-.projects .project:nth-child(1) .flat-content {
+.projects .project.p-focus .flat-content {
     height: 50%;
     margin-top: 100vh;
 }
 .projects .project:nth-child(2),
 .projects .project:nth-child(4) {
     flex-direction: row-reverse;
-
 }
 
 

@@ -18,7 +18,7 @@
   </div> -->
   <div class="scene">
     <div class="wall left">
-      <div data-snap="0" class="grid"
+      <div data-snap="0" class="grid" data-ref="0"
         style="transform: translateX(var(--left-translate-x)) translateZ(calc(var(--scroll-depth) + var(--sizeWall) * -0)) rotateY(var(--left-rotate-deg));">
         <div class="inner video-container" style="background-image: url('../IMG/frame_01.jpg');">
           <video src="../IMG/01.mp4" muted loop playsinline preload="auto" class="hidden-video"></video>
@@ -26,7 +26,7 @@
 
         </div>
       </div>
-      <div data-snap="1" class="grid"
+      <div data-snap="1" class="grid" data-ref="2"
         style="--word: 'TEEEEEST'; transform : translateX(var(--left-translate-x)) translateZ(calc(var(--scroll-depth) + var(--sizeWall) * -1)) rotateY(var(--left-rotate-deg));  ">
         <div class="inner video-container" style="background-image: url('../IMG/frame_02.jpg');">
           <div class="inner-container">
@@ -36,7 +36,7 @@
           </div>
         </div>
       </div>
-      <div data-snap="2" class="grid"
+      <div data-snap="2" class="grid" data-ref="4"
         style="transform: translateX(var(--left-translate-x)) translateZ(calc(var(--scroll-depth) + var(--sizeWall) * -2)) rotateY(var(--left-rotate-deg));">
         <div class="inner video-container" style="background-image: url('../IMG/frame_03.jpg');">
           <video src="../IMG/03.mp4" muted loop playsinline preload="auto" class="hidden-video"></video>
@@ -47,21 +47,21 @@
 
     </div>
     <div class="wall right">
-      <div data-snap="0" class="grid"
+      <div data-snap="0" class="grid" data-ref="1"
         style="transform: translateX(var(--base-translate-x)) translateZ(calc(var(--scroll-depth) + var(--sizeWall) * -0)) var(--base-rotate-y);">
         <div class="inner video-container" style="background-image: url('../IMG/frame_04.jpg');">
           <video src="../IMG/04.mp4" muted loop playsinline preload="auto" class="hidden-video"></video>
 
         </div>
       </div>
-      <div data-snap="1" class="grid"
+      <div data-snap="1" class="grid" data-ref="3"
         style="transform: translateX(var(--base-translate-x)) translateZ(calc(var(--scroll-depth) + var(--sizeWall) * -1)) var(--base-rotate-y);">
         <div class="inner video-container" style="background-image: url('../IMG/frame_01.jpg');">
           <video src="../IMG/01.mp4" muted loop playsinline preload="auto" class="hidden-video"></video>
 
         </div>
       </div>
-      <div data-snap="2" class="grid"
+      <div data-snap="2" class="grid" data-ref="3"
         style="transform: translateX(var(--base-translate-x)) translateZ(calc(var(--scroll-depth) + var(--sizeWall) * -2)) var(--base-rotate-y);">
         <div class="inner video-container" style="background-image: url('../IMG/frame_02.jpg');">
           <video src="../IMG/02.mp4" muted loop playsinline preload="auto" class="hidden-video"></video>
@@ -71,7 +71,7 @@
     </div>
   </div>
   <div class="projects">
-    <div href="#project1" class="project">
+    <div href="#project1" class="project" data-target="0">
       <video class="flat-video" src="../IMG/01.mp4" muted loop playsinline preload="auto"></video>
       <div class="flat-content">
         <p>deededed</p>
@@ -79,7 +79,7 @@
         <p>deededed</p>
       </div>
     </div>
-    <div href="#project2" class="project">
+    <div href="#project2" class="project"  data-target="1" >
       <video class="flat-video" src="../IMG/02.mp4" muted loop playsinline preload="auto"></video>
       <div class="flat-content">
         <p>deededed</p>
@@ -88,7 +88,25 @@
         <p>deededed</p>
       </div>
     </div>
-    <div href="#project3" class="project">
+    <div href="#project3" class="project"  data-target="2">
+      <video class="flat-video" src="../IMG/03.mp4" muted loop playsinline preload="auto"></video>
+      <div class="flat-content">
+        <p>deededed</p>
+        <p>deededed</p>
+        <p>deededed</p>
+        <p>deededed</p>
+      </div>
+    </div>
+    <div href="#project4" class="project"  data-target="3">
+      <video class="flat-video" src="../IMG/02.mp4" muted loop playsinline preload="auto"></video>
+      <div class="flat-content">
+        <p>deededed</p>
+        <p>deededed</p>
+        <p>deededed</p>
+        <p>deededed</p>
+      </div>
+    </div>
+    <div href="#project5" class="project"  data-target="4">
       <video class="flat-video" src="../IMG/03.mp4" muted loop playsinline preload="auto"></video>
       <div class="flat-content">
         <p>deededed</p>

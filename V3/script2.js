@@ -363,17 +363,16 @@ function handleClick(e) {
   const scene = document.querySelector(".scene");
   const grid = e.target.closest(".grid");
   const inner = e.target.closest(".inner");
-  console.log(e.target);
   if (!grid) return;
 
   // S'il y a déjà une grille ouverte et c'est pas la même
   if (isOpen && openedGrid && openedGrid.grid !== grid) {
     // on ferme l'ancienne
-    closeScroll({
-      grid: openedGrid.grid,
-      inner: openedGrid.inner,
-      scene,
-    });
+    // closeScroll({
+    //   grid: openedGrid.grid,
+    //   inner: openedGrid.inner,
+    //   scene,
+    // });
   }
 
   // Si pas encore ouvert
@@ -381,6 +380,11 @@ function handleClick(e) {
     grid.classList.add("active");
     openGrid({ grid, inner, scene });
     openedGrid = { grid, inner };
+
+    projectManager({
+      target: grid.dataset.ref,
+      scrollZone: document.querySelector(".projects"),
+    });
   }
   // sinon si c'est déjà ouvert => on ferme
   else if (isOpen && openedGrid.grid === grid) {
@@ -388,11 +392,42 @@ function handleClick(e) {
     const wiSe = window.innerWidth;
     const marClck = (marginClick * wiSe) / 100;
     if (e.x < marClck || e.x > wiSe - marClck) {
-      closeScroll({ grid, inner, scene });
+      // closeScroll({ grid, inner, scene });
     }
   }
+  /*************  ✨ Codeium Command ⭐  *************/
+  /**
+   * Fonction qui détecte si on clique sur un projet (et non sur un bord)
+   * => si oui, on ouvre la grille associée
+   */
+  /******  cc2f2d1b-9235-4e10-9bad-af25085171a5  *******/
 }
 
+function projectManager(ctx) {
+  ctx.projet = document.querySelector(
+    `.projects [data-target="${ctx.target}"]`
+  );
+  ctx.projet.classList.add("p-focus");
+  ctx.scrollZone.scroll({
+    top: ctx.projet.offsetTop,
+    behavior: "instant",
+  });
+  ctx.video = ctx.projet.querySelector("video");
+  const observer = new IntersectionObserver(
+    ([e]) => {
+      if (e.intersectionRatio < 1) {
+        observer.disconnect();
+        e.target.closest(".project").classList.remove("p-focus");
+        ctx.scrollZone.scroll({
+          top: ctx.projet.offsetTop,
+          behavior: "instant",
+        });
+      }
+    },
+    { threshold: [1] }
+  );
+  observer.observe(ctx.video);
+}
 function openGrid({ grid, inner, scene }) {
   if (!inner) return;
   scene.classList.add("isOpen");
@@ -418,13 +453,12 @@ function openGrid({ grid, inner, scene }) {
 }
 
 function closeScroll({ grid, inner, scene }) {
-  console.log(inner);
+  // console.log(inner);
   // const scrollZone = inner.querySelector(".inner-container");
   // if (!scrollZone) {
   //   closeGrid({ grid, inner, scene });
   //   return;
   // }
-
   // // On vérifie si c'est déjà scrollTop=0
   // if (scrollZone.scrollTop !== 0) {
   //   scrollZone.scrollTo({ top: 0, behavior: "smooth" });
@@ -533,11 +567,15 @@ function manageCoverVideo() {
   const videos = document.querySelectorAll(".hidden-video");
 
   videos.forEach((video) => {
-    video.addEventListener("canplaythrough", () => {
-      video.classList.remove("hidden-video");
-      video.closest(".video-container").style.backgroundImage = "none";
-    }, { once: true }); 
-  })
+    video.addEventListener(
+      "canplaythrough",
+      () => {
+        video.classList.remove("hidden-video");
+        video.closest(".video-container").style.backgroundImage = "none";
+      },
+      { once: true }
+    );
+  });
 }
 
 function handleVideoMouseEnter(e) {
