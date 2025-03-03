@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0,  user-scalable=no" />
+
+
+  <title>Scroll-Controlled Perspective Walls</title>
+ 
+
+
+</head>
+
+<body>
+  <!-- <div class="about">
+    <a class="button" href="#about">About</a>
+  </div> -->
+  <div class="scene">
+    <div class="wall left">
+      <div data-snap="0" class="grid"
+        style="transform: translateX(var(--left-translate-x)) translateZ(calc(var(--scroll-depth) + var(--sizeWall) * -0)) rotateY(var(--left-rotate-deg));">
+        <div class="inner video-container" style="background-image: url('../IMG/frame_01.jpg');">
+          <video src="../IMG/01.mp4" muted loop playsinline preload="auto" class="hidden-video"></video>
+
+
+        </div>
+      </div>
+      <div data-snap="1" class="grid"
+        style="--word: 'TEEEEEST'; transform : translateX(var(--left-translate-x)) translateZ(calc(var(--scroll-depth) + var(--sizeWall) * -1)) rotateY(var(--left-rotate-deg));  ">
+        <div class="inner video-container" style="background-image: url('../IMG/frame_02.jpg');">
+          <div class="inner-container">
+            <video src="../IMG/02.mp4" muted loop playsinline preload="auto" class="hidden-video"></video>
+
+
+          </div>
+        </div>
+      </div>
+      <div data-snap="2" class="grid"
+        style="transform: translateX(var(--left-translate-x)) translateZ(calc(var(--scroll-depth) + var(--sizeWall) * -2)) rotateY(var(--left-rotate-deg));">
+        <div class="inner video-container" style="background-image: url('../IMG/frame_03.jpg');">
+          <video src="../IMG/03.mp4" muted loop playsinline preload="auto" class="hidden-video"></video>
+
+        </div>
+      </div>
+
+
+    </div>
+    <div class="wall right">
+      <div data-snap="0" class="grid"
+        style="transform: translateX(var(--base-translate-x)) translateZ(calc(var(--scroll-depth) + var(--sizeWall) * -0)) var(--base-rotate-y);">
+        <div class="inner video-container" style="background-image: url('../IMG/frame_04.jpg');">
+          <video src="../IMG/04.mp4" muted loop playsinline preload="auto" class="hidden-video"></video>
+
+        </div>
+      </div>
+      <div data-snap="1" class="grid"
+        style="transform: translateX(var(--base-translate-x)) translateZ(calc(var(--scroll-depth) + var(--sizeWall) * -1)) var(--base-rotate-y);">
+        <div class="inner video-container" style="background-image: url('../IMG/frame_01.jpg');">
+          <video src="../IMG/01.mp4" muted loop playsinline preload="auto" class="hidden-video"></video>
+
+        </div>
+      </div>
+      <div data-snap="2" class="grid"
+        style="transform: translateX(var(--base-translate-x)) translateZ(calc(var(--scroll-depth) + var(--sizeWall) * -2)) var(--base-rotate-y);">
+        <div class="inner video-container" style="background-image: url('../IMG/frame_02.jpg');">
+          <video src="../IMG/02.mp4" muted loop playsinline preload="auto" class="hidden-video"></video>
+
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="projects">
+    <div href="#project1" class="project">
+      <video class="flat-video" src="../IMG/01.mp4" muted loop playsinline preload="auto"></video>
+      <div class="flat-content">
+        <p>deededed</p>
+        <p>deededed</p>
+        <p>deededed</p>
+      </div>
+    </div>
+    <div href="#project2" class="project">
+      <video class="flat-video" src="../IMG/02.mp4" muted loop playsinline preload="auto"></video>
+      <div class="flat-content">
+        <p>deededed</p>
+        <p>deededed</p>
+        <p>deededed</p>
+        <p>deededed</p>
+      </div>
+    </div>
+    <div href="#project3" class="project">
+      <video class="flat-video" src="../IMG/03.mp4" muted loop playsinline preload="auto"></video>
+      <div class="flat-content">
+        <p>deededed</p>
+        <p>deededed</p>
+        <p>deededed</p>
+        <p>deededed</p>
+      </div>
+    </div>
+
+  </div>
+</body>
+
+<link  rel="stylesheet"  href="style.css">
+<script src="script2.js" defer></script>
+
+</html>
