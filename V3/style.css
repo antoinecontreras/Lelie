@@ -28,9 +28,11 @@
     --g_margin: 40px;
     --word: "tesdddt";
 }
-html{
+
+html {
     overflow: hidden;
 }
+
 body {
     height: 100dvh;
     margin: 0;
@@ -240,20 +242,20 @@ table th {
     animation: downScale var(--animation-duration) forwards ease;
 }
 
-.scene.isOpen+.projects {
-    display: block;
-    overflow: scroll;
-    max-height: 100dvh;
-}
+
+
 
 .projects {
     display: none;
     position: relative;
+    max-height: 100dvh;
+    overflow: scroll;
     height: 100%;
     width: 100vw;
     margin-top: -100vh;
     z-index: 1000;
 }
+
 
 .projects .project {
     height: 100%;
@@ -277,7 +279,7 @@ table th {
 
 .projects .project .flat-content {
     position: relative;
-    background: black;
+    background: rgb(129, 129, 129);
     width: 50%;
     height: 100%;
 }
@@ -285,12 +287,18 @@ table th {
 .projects .project.p-focus .flat-content {
     height: 50%;
     margin-top: 100vh;
+    background: red;
 }
+
 .projects .project:nth-child(2),
 .projects .project:nth-child(4) {
     flex-direction: row-reverse;
 }
 
+/* .scene.isOpen+.projects { */
+.open_projects {
+    display: block;
+}
 
 @keyframes upScale {
     from {

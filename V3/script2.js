@@ -260,8 +260,9 @@ function repositionGrid(gridEl, newSnap, side, instant = false) {
 /***************************************************
  * 6) focusOnGrid : centrer la "caméra" sur une grille
  ***************************************************/
-function focusOnGrid({ gridElement, desiredZ, disableScroll = false, scene }) {
-  const transform = getComputedStyle(gridElement).transform;
+function focusOnGrid(ctx) {
+  // gridElement, desiredZ, disableScroll = false, scene
+  const transform = getComputedStyle(ctx.gridElement).transform;
   if (!transform || transform === "none") {
     console.warn("Grille sans transform calculé.");
     return;
@@ -272,27 +273,32 @@ function focusOnGrid({ gridElement, desiredZ, disableScroll = false, scene }) {
 
   // Calcul en pourcentage (vw)
   const zValue = (matrix.m43 / window.innerWidth) * 100;
-  const offset = zValue - desiredZ;
+  const offset = zValue - ctx.desiredZ;
 
   scrollDepth += offset;
   if (scrollDepth > 0) scrollDepth = 0;
 
-  scene.classList.add("allActive");
+  ctx.scene.classList.add("allActive");
+  
   document.documentElement.style.setProperty(
     "--scroll-depth",
     `${-scrollDepth}vw`
   );
 
   setTimeout(() => {
-    scene.classList.remove("allActive");
-    const vid = gridElement.querySelector("video");
+    ctx.scene.classList.remove("allActive");
+       projectManager({
+        target: ctx.gridElement.dataset.ref,
+        scrollZone: document.querySelector(".projects"),
+      });
+    const vid = ctx.gridElement.querySelector("video");
     if (vid && vid.paused) {
       vid.play().catch((err) => console.log("Vid play error:", err));
       currentPlayingVideo = vid;
     }
   }, g_duration);
 
-  if (disableScroll) {
+  if (ctx.disableScroll) {
     isScrolling = false;
   }
 }
@@ -381,10 +387,7 @@ function handleClick(e) {
     openGrid({ grid, inner, scene });
     openedGrid = { grid, inner };
 
-    projectManager({
-      target: grid.dataset.ref,
-      scrollZone: document.querySelector(".projects"),
-    });
+ 
   }
   // sinon si c'est déjà ouvert => on ferme
   else if (isOpen && openedGrid.grid === grid) {
@@ -404,6 +407,8 @@ function handleClick(e) {
 }
 
 function projectManager(ctx) {
+  ctx.projects = document.querySelector(`.projects`);
+  ctx.projects.classList.add("open_projects");
   ctx.projet = document.querySelector(
     `.projects [data-target="${ctx.target}"]`
   );
@@ -427,6 +432,8 @@ function projectManager(ctx) {
     { threshold: [1] }
   );
   observer.observe(ctx.video);
+
+  
 }
 function openGrid({ grid, inner, scene }) {
   if (!inner) return;
@@ -448,6 +455,7 @@ function openGrid({ grid, inner, scene }) {
         disableScroll: true,
         scene,
       });
+   
     },
   });
 }
