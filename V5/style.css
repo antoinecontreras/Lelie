@@ -297,7 +297,7 @@ table th {
     display: flex;
     flex-direction: column;
     flex-wrap: wrap;
-    border-top: solid 1px grey;
+    /* border-top: solid 1px grey; */
     position: relative;
 }
 

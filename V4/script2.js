@@ -201,7 +201,9 @@ function projectManager(ctx) {
 	});
 	const observer = new IntersectionObserver(
 		([e]) => {
+			console.log("Intersection Ratio:");
 			if (e.intersectionRatio < 1) {
+				console.log("inside IF");
 				observer.disconnect();
 				ctx.beside_target.forEach(e => {
 					e.style.display = "";
@@ -215,6 +217,7 @@ function projectManager(ctx) {
 		},
 		{ threshold: [1] }
 	);
+	console.log(ctx.video);
 	observer.observe(ctx.video);
 }
 
