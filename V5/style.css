@@ -395,12 +395,14 @@ table th {
         "p_tab . ."
         "p_images . ."
         "p_video . .";
+        grid-template-rows: auto;
+        justify-items: start;
     background: rgb(255, 255, 255);
     /* padding: calc(var(--g_margin) / 4) calc(var(--g_margin) / 2) ; */
     padding: calc(var(--g_margin) / 4) 0;
     width: 50%;
-    min-height: 100%;
-    height: calc(100% - var(--g_margin) /2);
+    /* min-height: 100%; */
+    /* height: calc(100% - var(--g_margin) /2); */
 }
 .p_title{
     grid-area: p_title;
@@ -422,10 +424,19 @@ table th {
 .p_video{
     grid-area: p_video;
 }
+.p_video img{
+    width: 100%;
+}
+.v_player{
+    left: 0;
+    display: flex;
+    flex-direction: column;
+}
 
 .projects .project.p-focus .flat-content {
     height: 50%;
     margin-top: 100vh;
+    /* margin-top: 10vh; */
 }
 
 .flat-content p,
