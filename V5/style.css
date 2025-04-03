@@ -40,7 +40,7 @@ body {
     font-weight: 100;
     font-style: normal;
     font-variation-settings:
-        "wdth"112.5;
+        "wdth" 112.5;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 
@@ -293,10 +293,11 @@ table th {
 
 
 .projects .project {
-    height: 100%;
+    height: fit-content;
+    background: greenyellow;
     display: flex;
-    flex-direction: column;
-    flex-wrap: wrap;
+    flex-direction: row;
+    /* flex-wrap: wrap; */
     /* border-top: solid 1px grey; */
     position: relative;
 }
@@ -341,18 +342,85 @@ table th {
 }
 
 
+.specs {
+    /* font-family: monospace; */
+    max-width: 600px;
+}
+
+.specs div {
+    font-size: var(--font-size);
+    text-transform: lowercase;
+    display: flex;
+    align-items: baseline;
+    white-space: nowrap;
+}
+
+.label {
+    padding-right: 8px;
+}
+
+.dots {
+    flex-grow: 1;
+    border-bottom: 1px dotted #ccc;
+    margin: 0 8px;
+    height: 0.8em;
+    position: relative;
+}
+
+.specs div::before {
+    content: ">>";
+    color: #4d4d4d;
+    left: 0;
+    pointer-events: none;
+}
+
+.flat-content .image_content {
+    width: 100%;
+}
+
+
 
 .projects .project.reverse .flat-content::before {
     /* margin-left: 100%; */
 }
 
 .projects .project .flat-content {
+    display: grid;
     position: relative;
+    /* grid-template-rows: repeat(1, 1fr);
+    grid-template-columns: repeat(3, 1fr); */
+    grid-template-areas:
+        "p_title p_title p_title"
+        "p_description . ."
+        "p_tab . ."
+        "p_images . ."
+        "p_video . .";
     background: rgb(255, 255, 255);
     /* padding: calc(var(--g_margin) / 4) calc(var(--g_margin) / 2) ; */
     padding: calc(var(--g_margin) / 4) 0;
     width: 50%;
+    min-height: 100%;
     height: calc(100% - var(--g_margin) /2);
+}
+.p_title{
+    grid-area: p_title;
+}
+.p_tab{
+    grid-area: p_tab;
+}
+.p_description{
+    grid-area: p_description;
+}
+.p_images{
+    grid-area: p_images;
+    display: flex;
+    width: 50vw;
+}
+.p_images .image_content{
+    width: 50%;
+}
+.p_video{
+    grid-area: p_video;
 }
 
 .projects .project.p-focus .flat-content {
@@ -360,7 +428,8 @@ table th {
     margin-top: 100vh;
 }
 
-.flat-content p {
+.flat-content p,
+.flat-content>.specs {
     margin: calc(var(--g_margin) *.1) calc(var(--g_margin) * .25);
 }
 
