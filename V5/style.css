@@ -33,8 +33,7 @@
     --active_color: rgb(153, 255, 0);
     --scale: 1;
     --border-thickness: 1px;
-    --color-black: rgb(30, 255, 0);
-    --color: var(--color-black);
+    --color-black: rgb(0, 0, 0);
     --width: 17%;
     --height: 17%;
     --width2: 30%;
@@ -50,73 +49,6 @@ html {
 }
 
 body {
-/* 
-    background:
-        linear-gradient(var(--color), var(--color)) center top,
-        linear-gradient(var(--color), var(--color)) center bottom,
-        linear-gradient(var(--color), var(--color)) left center,
-        linear-gradient(var(--color), var(--color)) right center,
-
-        linear-gradient(var(--color), var(--color)) center top,
-        linear-gradient(var(--color), var(--color)) center bottom,
-        linear-gradient(var(--color), var(--color)) left center,
-        linear-gradient(var(--color), var(--color)) right center,
-
-        linear-gradient(var(--color), var(--color)) center top,
-        linear-gradient(var(--color), var(--color)) center bottom,
-        linear-gradient(var(--color), var(--color)) left center,
-        linear-gradient(var(--color), var(--color)) right center,
-
-        linear-gradient(var(--color), var(--color)) center top,
-        linear-gradient(var(--color), var(--color)) center bottom,
-        linear-gradient(var(--color), var(--color)) left center,
-        linear-gradient(var(--color), var(--color)) right center;
-
-    background-size:
-        calc(var(--width) * var(--scale)) var(--border-thickness),
-        calc(var(--width) * var(--scale)) var(--border-thickness),
-        var(--border-thickness) calc(var(--height) * var(--scale)),
-        var(--border-thickness) calc(var(--height) * var(--scale)),
-
-        calc(var(--width2) * var(--scale)) var(--border-thickness),
-        calc(var(--width2) * var(--scale)) var(--border-thickness),
-        var(--border-thickness) calc(var(--height2) * var(--scale)),
-        var(--border-thickness) calc(var(--height2) * var(--scale)),
-
-        calc(var(--width3) * var(--scale)) var(--border-thickness),
-        calc(var(--width3) * var(--scale)) var(--border-thickness),
-        var(--border-thickness) calc(var(--height3) * var(--scale)),
-        var(--border-thickness) calc(var(--height3) * var(--scale)),
-
-        calc(var(--width4) * var(--scale)) var(--border-thickness),
-        calc(var(--width4) * var(--scale)) var(--border-thickness),
-        var(--border-thickness) calc(var(--height4) * var(--scale)),
-        var(--border-thickness) calc(var(--height4) * var(--scale));
-
-    background-position:
-        center calc(50% - calc(var(--height) * var(--scale) / 2)),
-        center calc(50% + calc(var(--height) * var(--scale) / 2)),
-        calc(50% - calc(var(--width) * var(--scale) / 2)) center,
-        calc(50% + calc(var(--width) * var(--scale) / 2)) center,
-
-        center calc(50% - calc(var(--height2) * var(--scale) / 2)),
-        center calc(50% + calc(var(--height2) * var(--scale) / 2)),
-        calc(50% - calc(var(--width2) * var(--scale) / 2)) center,
-        calc(50% + calc(var(--width2) * var(--scale) / 2)) center,
-
-        center calc(50% - calc(var(--height3) * var(--scale) / 2)),
-        center calc(50% + calc(var(--height3) * var(--scale) / 2)),
-        calc(50% - calc(var(--width3) * var(--scale) / 2)) center,
-        calc(50% + calc(var(--width3) * var(--scale) / 2)) center,
-
-        center calc(50% - calc(var(--height4) * var(--scale) / 2)),
-        center calc(50% + calc(var(--height4) * var(--scale) / 2)),
-        calc(50% - calc(var(--width4) * var(--scale) / 2)) center,
-        calc(50% + calc(var(--width4) * var(--scale) / 2)) center;
-
-    background-repeat: no-repeat; */
-
-
     font-family: "Martian Mono", monospace;
     font-optical-sizing: auto;
     font-weight: 100;
@@ -129,8 +61,11 @@ body {
     height: 100dvh;
     margin: 0;
     cursor: crosshair;
+    background: #fbfbfb;
 }
 .rectangle {
+        /* border: 6.3rem solid ; */
+    border-radius: 3.5rem;
     position: absolute;
     pointer-events: none;
     top: 50%;
@@ -139,11 +74,23 @@ body {
     height: 250vh;
     transform-style: preserve-3d;
     transform-origin: center center;
-    background: none;
-    border: .5vw solid black;
+    background: linear-gradient(0deg, rgb(221 221 221) 0%, rgb(9 9 121 / 6%) 20%, rgb(255 255 255 / 8%) 44%);
+
     box-sizing: border-box;
     transform: translateX(var(--base-translate-x)) translateZ(calc(var(--scroll-depth) - var(--halfSizeWall) + var(--sizeWall)* var(--index)* -1)) translate(-50%, -50%);
   }
+  /* .rectangle_bottom{
+  --shadow: rgb(227 227 227);
+    position: absolute;
+    pointer-events: none;
+    top: 0;
+    left: -25vw;
+    width: 250vw;
+    height: 300vw;
+    transform-origin: 50% 50% 0px;
+    background: red;
+    transform:  rotateX(90.1deg) translateX(var(--base-translate-x)) translateZ(calc(var(--scroll-depth) - var(--halfSizeWall) + var(--sizeWall)* var(--index)* -1)) translate(-50%, 0%);
+  } */
 p {
     font-size: var(--font-size);
     line-height: var(--font-size);
@@ -151,7 +98,7 @@ p {
 }
 
 .home {
-    background: red;
+    
     z-index: 100000;
     position: absolute;
     top: 0;
@@ -234,7 +181,7 @@ table th {
 .scene.isOpen .wall .grid.grid.active .inner,
 .scene:not(.isOpen) .wall .grid .inner {
     pointer-events: initial;
-    background: red;
+    
     margin: 5px;
 }
 
@@ -256,6 +203,7 @@ table th {
     min-width: 0;
     height: 100%;
     margin: 0;
+    border-radius: 7rem;
     transition: transform var(--animation-duration) ease, opacity 1.2s ease, padding var(--animation-duration) linear, margin var(--animation-duration) linear;
 }
 
