@@ -1,4 +1,3 @@
-2
 <!DOCTYPE html>
 <html lang="en">
 
@@ -16,10 +15,12 @@
 </head>
 
 <body>
-  <!-- <div class="about">
-    <a class="button" href="#about">About</a>
-  </div> -->
   <div class="scene" style="opacity: 0;">
+    <div class="rectangle" style="--index: 0;"></div>
+    <div class="rectangle" style="--index: 1;"></div>
+    <div class="rectangle" style="--index: 2;"></div>
+    <div class="rectangle" style="--index: 3;"></div>
+    
     <div class="wall left">
       <div data-snap="0" class="grid" data-ref="0"
         style="transform: translateX(var(--left-translate-x)) translateZ(calc(var(--scroll-depth) - var(--halfSizeWall) + var(--sizeWall) * -0)) rotateY(var(--left-rotate-deg));">
@@ -211,3 +212,4 @@
 <script src="animation_logic.js" defer></script> -->
 
 </html>
+

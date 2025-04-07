@@ -198,9 +198,9 @@ function projectManager(ctx) {
   const newobserver = new IntersectionObserver(
     ([entry]) => {
       console.log(entry.intersectionRatio);
-      if(entry.intersectionRatio < 1){
+      if (entry.intersectionRatio < 1) {
         console.log("BANG");
-      
+
         newobserver.disconnect();
         ctx.beside_target.forEach((entry) => {
           entry.style.display = "";
@@ -210,7 +210,7 @@ function projectManager(ctx) {
           top: ctx.project.offsetTop,
           behavior: "instant",
         });
-      }      
+      }
     },
     {
       root: ctx.scrollZone, // important !
@@ -294,6 +294,8 @@ function updateVideoScale() {
 // SCROLL LOGIC
 //////////////////////////////////////////////
 function handleWheelEvent(e) {
+  // Normaliser entre 0 et 1
+
   if (!IS_SCROLLING) return;
   if (e.preventDefault) e.preventDefault();
   let deltaY = e.deltaY;
@@ -308,7 +310,17 @@ function handleWheelEvent(e) {
   if (SCROLLDEPTH > 0) {
     SCROLLDEPTH = 0;
   }
-  // SCROLLDEPTH = parseFloat(localStorage.getItem("scrollDepth")) || 0;
+
+  const baseWidth = 27; // Taille du plus gros rectangle
+  const basePixelWidth = (baseWidth / 100) * window.innerWidth;
+  const growthFactor = 2;
+  const cycleLength = basePixelWidth * (growthFactor - 1);
+
+  let cycleProgress = (Math.abs(SCROLLDEPTH) % cycleLength) / cycleLength;
+  let scale = 1 + cycleProgress;
+
+  // Injecter dans la variable CSS
+  document.documentElement.style.setProperty("--scale", scale);
 
   document.documentElement.style.setProperty(
     "--scroll-depth",
@@ -342,6 +354,7 @@ function inertiaLoop() {
 
   // Détection hors-champ
   // (On peut le faire moins souvent si on veut)
+
   if (Math.abs(VELOCITY) > 0.01) {
     // continue tant qu'on a de la vitesse
     const dir = VELOCITY > 0 ? "down" : "up";
