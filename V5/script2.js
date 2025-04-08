@@ -32,6 +32,8 @@ let IS_TOUCHING = false;
 let IS_SCROLLING = true;
 let IS_OPEN = false;
 let OPENED_GRID = null;
+let RESIZE_TIMEOUT = null;
+let CANVAS_LAYER = null;
 
 // Vidéos
 let CURRENT_PLAYING_VIDEO = null;
@@ -50,8 +52,14 @@ function createMatrix(transformStr) {
   return null;
 }
 
-/* Resize => updateVideoScale si besoin */
-window.addEventListener("resize", updateVideoScale);
+
+window.addEventListener("resize", () => {
+  clearTimeout(RESIZE_TIMEOUT); // on reset le timer à chaque mouvement
+  RESIZE_TIMEOUT = setTimeout(() => {
+    updateVideoScale();
+    CANVAS_LAYER.resize();
+  }, 150); // 150ms après le dernier resize
+});
 
 window.addEventListener(
   "DOMContentLoaded",
@@ -68,13 +76,20 @@ window.addEventListener(
       vid.autoplay = false;
       vid.defaultMuted = false;
     });
+
     manageCoverVideo();
-    setTimeout(updateVideoScale, 500); // exécute après la pile courante
+    setTimeout(updateVideoScale, 500);
+
+    // 🚀 Créer ton canvas ici
+    CANVAS_LAYER = new CanvasManager();
+    CANVAS_LAYER.redraw(); 
+
 
     document.querySelector(".scene").style.opacity = "";
   },
   { passive: true }
 );
+
 function initEventListeners() {
   // 1) Détection device
   const isHoverableDevice = window.matchMedia(
@@ -332,6 +347,7 @@ function handleWheelEvent(e) {
     detectOutOfFrame(SCROLLDIRECTION);
     LASTCHECKTIME = now;
   }
+  CANVAS_LAYER.redraw();
 }
 function inertiaLoop() {
   if (IS_TOUCHING) return;
@@ -364,6 +380,7 @@ function inertiaLoop() {
       LASTCHECKTIME = now;
     }
     requestAnimationFrame(inertiaLoop);
+    CANVAS_LAYER.redraw();
   } else {
     // Vitesse trop faible => on arrête
     VELOCITY = 0;

@@ -34,14 +34,6 @@
     --scale: 1;
     --border-thickness: 1px;
     --color-black: rgb(0, 0, 0);
-    --width: 17%;
-    --height: 17%;
-    --width2: 30%;
-    --height2: 29%;
-    --width3: 45%;
-    --height3: 44%;
-    --width4: 60%;  /* 🔥 Le nouveau rectangle plus grand */
-    --height4: 58%;
 }
 
 html {
@@ -64,8 +56,8 @@ body {
     background: #fbfbfb;
 }
 .rectangle {
-        /* border: 6.3rem solid ; */
-    border-radius: 3.5rem;
+    display: none;
+    /* border-radius: 3.5rem;
     position: absolute;
     pointer-events: none;
     top: 50%;
@@ -74,23 +66,27 @@ body {
     height: 250vh;
     transform-style: preserve-3d;
     transform-origin: center center;
-    background: linear-gradient(0deg, rgb(221 221 221) 0%, rgb(9 9 121 / 6%) 20%, rgb(255 255 255 / 8%) 44%);
-
+    border: 2px solid var(--color-black);
     box-sizing: border-box;
     transform: translateX(var(--base-translate-x)) translateZ(calc(var(--scroll-depth) - var(--halfSizeWall) + var(--sizeWall)* var(--index)* -1)) translate(-50%, -50%);
+     */
+    /* background: linear-gradient(0deg, rgb(221 221 221) 0%, rgb(9 9 121 / 6%) 20%, rgb(255 255 255 / 8%) 44%); */
   }
-  /* .rectangle_bottom{
-  --shadow: rgb(227 227 227);
+  .rectangle_test {
+    border-radius: 1rem;
     position: absolute;
     pointer-events: none;
-    top: 0;
-    left: -25vw;
-    width: 250vw;
-    height: 300vw;
-    transform-origin: 50% 50% 0px;
-    background: red;
-    transform:  rotateX(90.1deg) translateX(var(--base-translate-x)) translateZ(calc(var(--scroll-depth) - var(--halfSizeWall) + var(--sizeWall)* var(--index)* -1)) translate(-50%, 0%);
-  } */
+    top: 50%;
+    left: 50%;
+    width: 50vw;
+    height: 50vh;
+    background: rgba(255, 0, 0, 0.3); /* 🟥 Couleur rouge transparente pour bien voir */
+    transform-style: preserve-3d;
+    transform-origin: center center;
+    transform: translate(-50%, -50%) translateZ(calc(var(--scroll-depth) + var(--sizeWall) * var(--index) * -1));
+    z-index: 1000;
+  }
+
 p {
     font-size: var(--font-size);
     line-height: var(--font-size);
@@ -119,6 +115,8 @@ p {
     z-index: 1000;
     width: 100%;
     height: 100%;
+
+    /* opacity: 0;   */
 }
 
 .wall {
@@ -222,7 +220,7 @@ table th {
     background-size: contain;
     /* background-image: var(--placeHolder); */
     /* background-color: red; */
-    background-image: linear-gradient(90deg, rgb(221 221 221) 0%, rgb(9 9 121 / 6%) 20%, rgb(255 255 255 / 8%) 44%);
+    /* background-image: linear-gradient(90deg, rgb(221 221 221) 0%, rgb(9 9 121 / 6%) 20%, rgb(255 255 255 / 8%) 44%); */
 }
 
 .wall .grid.active .inner {
@@ -278,7 +276,7 @@ table th {
 
 .wall.right .grid {
     border-radius: 7rem;
-    background: linear-gradient(-90deg, rgb(221 221 221) 0%, rgb(9 9 121 / 6%) 20%, rgb(255 255 255 / 8%) 44%);
+    /* background: linear-gradient(-90deg, rgb(221 221 221) 0%, rgb(9 9 121 / 6%) 20%, rgb(255 255 255 / 8%) 44%); */
     transform-origin: center right;
     -webkit-transform-origin: center right;
     -moz-transform-origin: center right;
@@ -289,7 +287,7 @@ table th {
 
 .wall.left .grid {
     border-radius: 7rem;
-    background: linear-gradient(90deg, rgb(221 221 221) 0%, rgb(9 9 121 / 6%) 20%, rgb(255 255 255 / 8%) 44%);
+    /* background: linear-gradient(90deg, rgb(221 221 221) 0%, rgb(9 9 121 / 6%) 20%, rgb(255 255 255 / 8%) 44%); */
 }
 .wall.left {
     left: 0;

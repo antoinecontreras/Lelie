@@ -4,11 +4,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0,  user-scalable=no" />
-
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Martian+Mono:wdth,wght@112.5,100&display=swap" rel="stylesheet">
-  <title>Scroll-Controlled Perspective Walls</title>
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.11.3/lib/p5.min.js" defer></script>
+  <title>Lelie Portfolio</title>
 
 
 
@@ -16,7 +16,7 @@
 
 <body>
   <div class="scene" style="opacity: 0;">
-    <div class="rectangle" style="--index: 0;"></div>
+    <!-- <div class="rectangle" style="--index: 0;"></div>
     <div class="rectangle" style="--index: 1;"></div>
     <div class="rectangle" style="--index: 2;"></div>
     <div class="rectangle" style="--index: 3;"></div>
@@ -25,10 +25,12 @@
     <div class="rectangle" style="--index: 6;"></div>
     <div class="rectangle" style="--index: 7;"></div>
     <div class="rectangle" style="--index: 8;"></div>
-    <div class="rectangle" style="--index: 9;"></div>
+    <div class="rectangle" style="--index: 9;"></div> -->
+    <div class="rectangle_test" style="--index: 0;"></div>
+    <div class="rectangle_test" style="--index: 1;"></div>
 
 
-    
+
     <div class="wall left">
       <div data-snap="0" class="grid" data-ref="0"
         style="transform: translateX(var(--left-translate-x)) translateZ(calc(var(--scroll-depth) - var(--halfSizeWall) + ( var(--sizeWall) + var(--z-gap) ) * -0)) rotateY(var(--left-rotate-deg));">
@@ -211,13 +213,14 @@
 
   </div>
 
-  <div class="home"><a class="button" href="#home">Home</a></div>
+  <!-- <div class="home"><a class="button" href="#home">Home</a></div> -->
+
+
+  <link rel="stylesheet" href="style.css">
+  <script src="canvas.js"></script>
+  <script src="script2.js"></script>
+  <!-- <script src="scroll_logic.js" defer></script>
+<script src="animation_logic.js" defer></script> -->
 </body>
 
-<link rel="stylesheet" href="style.css">
-<script src="script2.js" defer></script>
-<!-- <script src="scroll_logic.js" defer></script>
-<script src="animation_logic.js" defer></script> -->
-
 </html>
-
