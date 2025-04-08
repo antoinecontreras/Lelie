@@ -27,36 +27,33 @@
     <div class="rectangle" style="--index: 8;"></div>
     <div class="rectangle" style="--index: 9;"></div>
 
-    <!-- <div class="rectangle_bottom" style="--index: 0;"></div>
-    <div class="rectangle_bottom" style="--index: 1;"></div>
-    <div class="rectangle_bottom" style="--index: 2;"></div>
-    <div class="rectangle_bottom" style="--index: 3;"></div> -->
+
     
     <div class="wall left">
       <div data-snap="0" class="grid" data-ref="0"
-        style="transform: translateX(var(--left-translate-x)) translateZ(calc(var(--scroll-depth) - var(--halfSizeWall) + var(--sizeWall) * -0)) rotateY(var(--left-rotate-deg));">
-        <div class="inner video-container" style="background-image: url('../IMG/frame_01.jpg');">
+        style="transform: translateX(var(--left-translate-x)) translateZ(calc(var(--scroll-depth) - var(--halfSizeWall) + ( var(--sizeWall) + var(--z-gap) ) * -0)) rotateY(var(--left-rotate-deg));">
+        <div class="inner video-container" style="--placeHolder: url('../IMG/frame_01.jpg');">
           <video src="../IMG/01.mp4" muted loop playsinline preload="auto" class="hidden-video"></video>
 
         </div>
       </div>
       <div data-snap="2" class="grid" data-ref="2"
-        style="--word: 'TEEEEEST'; transform : translateX(var(--left-translate-x)) translateZ(calc(var(--scroll-depth) - var(--halfSizeWall) + var(--sizeWall) * -1)) rotateY(var(--left-rotate-deg));  ">
-        <div class="inner video-container" style="background-image: url('../IMG/frame_02.jpg');">
+        style="--word: 'TEEEEEST'; transform : translateX(var(--left-translate-x)) translateZ(calc(var(--scroll-depth) - var(--halfSizeWall) + ( var(--sizeWall) + var(--z-gap) ) * -1)) rotateY(var(--left-rotate-deg));  ">
+        <div class="inner video-container" style="--placeHolder: url('../IMG/frame_02.jpg');">
           <div class="inner-container">
             <video src="../IMG/02.mp4" muted loop playsinline preload="auto" class="hidden-video"></video>
           </div>
         </div>
       </div>
       <div data-snap="4" class="grid" data-ref="4"
-        style="transform: translateX(var(--left-translate-x)) translateZ(calc(var(--scroll-depth) - var(--halfSizeWall) + var(--sizeWall) * -2)) rotateY(var(--left-rotate-deg));">
-        <div class="inner video-container" style="background-image: url('../IMG/frame_03.jpg');">
+        style="transform: translateX(var(--left-translate-x)) translateZ(calc(var(--scroll-depth) - var(--halfSizeWall) + ( var(--sizeWall) + var(--z-gap) ) * -2)) rotateY(var(--left-rotate-deg));">
+        <div class="inner video-container" style="--placeHolder: url('../IMG/frame_03.jpg');">
           <video src="../IMG/03.mp4" muted loop playsinline preload="auto" class="hidden-video"></video>
         </div>
       </div>
       <div data-snap="6" class="grid" data-ref="3"
-        style="transform: translateX(var(--left-translate-x)) translateZ(calc(var(--scroll-depth) - var(--halfSizeWall) + var(--sizeWall) * -3)) rotateY(var(--left-rotate-deg));">
-        <div class="inner video-container" style="background-image: url('../IMG/frame_01.jpg');">
+        style="transform: translateX(var(--left-translate-x)) translateZ(calc(var(--scroll-depth) - var(--halfSizeWall) + ( var(--sizeWall) + var(--z-gap) ) * -3)) rotateY(var(--left-rotate-deg));">
+        <div class="inner video-container" style="--placeHolder: url('../IMG/frame_01.jpg');">
           <video src="../IMG/01.mp4" muted loop playsinline preload="auto" class="hidden-video"></video>
         </div>
       </div>
@@ -64,28 +61,28 @@
     </div>
     <div class="wall right">
       <div data-snap="1" class="grid" data-ref="1"
-        style="transform: translateX(var(--base-translate-x)) translateZ(calc(var(--scroll-depth) - var(--halfSizeWall) + var(--sizeWall) * -0)) var(--base-rotate-y);">
-        <div class="inner video-container" style="background-image: url('../IMG/frame_01.jpg');">
+        style="transform: translateX(var(--base-translate-x)) translateZ(calc(var(--scroll-depth) - var(--halfSizeWall) + ( var(--sizeWall) + var(--z-gap) ) * -0)) var(--base-rotate-y);">
+        <div class="inner video-container" style="--placeHolder: url('../IMG/frame_01.jpg');">
           <video src="../IMG/01.mp4" muted loop playsinline preload="auto" class="hidden-video"></video>
         </div>
       </div>
       <div data-snap="3" class="grid" data-ref="3"
-        style="transform: translateX(var(--base-translate-x)) translateZ(calc(var(--scroll-depth) - var(--halfSizeWall) + var(--sizeWall) * -1)) var(--base-rotate-y);">
-        <div class="inner video-container" style="background-image: url('../IMG/frame_02.jpg');">
+        style="transform: translateX(var(--base-translate-x)) translateZ(calc(var(--scroll-depth) - var(--halfSizeWall) + ( var(--sizeWall) + var(--z-gap) ) * -1)) var(--base-rotate-y);">
+        <div class="inner video-container" style="--placeHolder: url('../IMG/frame_02.jpg');">
           <video src="../IMG/02.mp4" muted loop playsinline preload="auto" class="hidden-video"></video>
 
         </div>
       </div>
       <div data-snap="5" class="grid" data-ref="3"
-        style="transform: translateX(var(--base-translate-x)) translateZ(calc(var(--scroll-depth) - var(--halfSizeWall) + var(--sizeWall) * -2)) var(--base-rotate-y);">
-        <div class="inner video-container" style="background-image: url('../IMG/frame_03.jpg');">
+        style="transform: translateX(var(--base-translate-x)) translateZ(calc(var(--scroll-depth) - var(--halfSizeWall) + ( var(--sizeWall) + var(--z-gap) ) * -2)) var(--base-rotate-y);">
+        <div class="inner video-container" style="--placeHolder: url('../IMG/frame_03.jpg');">
           <video src="../IMG/03.mp4" muted loop playsinline preload="auto" class="hidden-video"></video>
 
         </div>
       </div>
       <div data-snap="7" class="grid" data-ref="4"
-        style="transform: translateX(var(--base-translate-x)) translateZ(calc(var(--scroll-depth) - var(--halfSizeWall) + var(--sizeWall) * -3)) var(--base-rotate-y);">
-        <div class="inner video-container" style="background-image: url('../IMG/frame_01.jpg');">
+        style="transform: translateX(var(--base-translate-x)) translateZ(calc(var(--scroll-depth) - var(--halfSizeWall) + ( var(--sizeWall) + var(--z-gap) ) * -3)) var(--base-rotate-y);">
+        <div class="inner video-container" style="--placeHolder: url('../IMG/frame_01.jpg');">
           <video src="../IMG/01.mp4" muted loop playsinline preload="auto" class="hidden-video"></video>
 
         </div>
