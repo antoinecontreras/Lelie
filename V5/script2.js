@@ -116,8 +116,11 @@ function initEventListeners() {
   }
 
   // 3) Resize => updateVideoScale
-  window.addEventListener("resize", updateVideoScale);
-
+  
+  window.addEventListener("resize", () => {
+    updateVideoScale();
+    CANVAS_LAYER.resize();
+});
   // 4) Gérer la coverVideo
   manageCoverVideo();
 }

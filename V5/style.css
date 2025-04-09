@@ -49,15 +49,15 @@ body {
         "wdth" 112.5;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-
-    height: 100dvh;
+    width: 100vw;
+    height: 100dvh; 
     margin: 0;
     cursor: crosshair;
     background: #fbfbfb;
 }
 .rectangle {
-    display: none;
-    /* border-radius: 3.5rem;
+    /* display: none; */
+    border-radius: 3.5rem;
     position: absolute;
     pointer-events: none;
     top: 50%;
@@ -66,10 +66,11 @@ body {
     height: 250vh;
     transform-style: preserve-3d;
     transform-origin: center center;
+    transform: translateX(75vw) translateZ(calc(var(--scroll-depth) - 150vw + 300vw* var(--index)* -1)) translate(-50%, -50%);
     border: 2px solid var(--color-black);
     box-sizing: border-box;
-    transform: translateX(var(--base-translate-x)) translateZ(calc(var(--scroll-depth) - var(--halfSizeWall) + var(--sizeWall)* var(--index)* -1)) translate(-50%, -50%);
-     */
+    /* transform: translateX(var(--base-translate-x)) translateZ(calc(var(--scroll-depth) - var(--halfSizeWall) + var(--sizeWall)* var(--index)* -1)) translate(-50%, -50%); */
+    /* background: rgba(148, 148, 148, 0.756); */
     /* background: linear-gradient(0deg, rgb(221 221 221) 0%, rgb(9 9 121 / 6%) 20%, rgb(255 255 255 / 8%) 44%); */
   }
   .rectangle_test {
@@ -80,7 +81,7 @@ body {
     left: 50%;
     width: 50vw;
     height: 50vh;
-    background: rgba(255, 0, 0, 0.3); /* 🟥 Couleur rouge transparente pour bien voir */
+    background: rgba(148, 148, 148, 0.756); /* 🟥 Couleur rouge transparente pour bien voir */
     transform-style: preserve-3d;
     transform-origin: center center;
     transform: translate(-50%, -50%) translateZ(calc(var(--scroll-depth) + var(--sizeWall) * var(--index) * -1));
@@ -276,6 +277,7 @@ table th {
 
 .wall.right .grid {
     border-radius: 7rem;
+    background: red;
     /* background: linear-gradient(-90deg, rgb(221 221 221) 0%, rgb(9 9 121 / 6%) 20%, rgb(255 255 255 / 8%) 44%); */
     transform-origin: center right;
     -webkit-transform-origin: center right;
@@ -351,8 +353,6 @@ table th {
     background: var(--active_color);
     display: flex;
     flex-direction: row;
-    /* flex-wrap: wrap; */
-    /* border-top: solid 1px grey; */
     position: relative;
 }
 
@@ -447,7 +447,7 @@ table th {
     grid-template-rows: calc(50vh - .9rem * 7) auto;
     grid-gap: calc(.9rem * 2);
     align-items: start;
-    background: rgb(255, 255, 255);
+    background: rgb(159, 41, 41);
     /* padding: calc(var(--g_margin) / 4) calc(var(--g_margin) / 2) ; */
     padding: calc(var(--g_margin) / 4) 0;
     width: calc(50% - .9rem * 2);
@@ -466,11 +466,7 @@ table th {
 
 }
 
-/* .p_description {
-    grid-column: span 3 / span 3;
-    grid-row-start: 2;
 
-} */
 
 .p_tab {
     grid-row-start: 3;
