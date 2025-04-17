@@ -57,7 +57,7 @@ window.addEventListener("resize", () => {
   clearTimeout(RESIZE_TIMEOUT); // on reset le timer à chaque mouvement
   RESIZE_TIMEOUT = setTimeout(() => {
     updateVideoScale();
-    CANVAS_LAYER.resize();
+    // CANVAS_LAYER.resize();
   }, 150); // 150ms après le dernier resize
 });
 
@@ -119,7 +119,7 @@ function initEventListeners() {
   
   window.addEventListener("resize", () => {
     updateVideoScale();
-    CANVAS_LAYER.resize();
+    // CANVAS_LAYER.resize();
 });
   // 4) Gérer la coverVideo
   manageCoverVideo();

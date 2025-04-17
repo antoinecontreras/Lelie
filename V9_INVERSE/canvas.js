@@ -35,7 +35,12 @@ class CanvasManager {
         this.cam = p.createCamera();
         this.radiusPx = this.getRadiusPx(4.5); // 3.5rem => px
         this.shadowTexture = p.loadImage("../IMG/1_gradient.png", (img) => {
-          this.roundTexture = this.applyRoundedMask(p, img, 0.02, 0.023);
+          const baseRadius = 0.02;
+          const screenRatio = p.width / p.height;
+          const relRX = baseRadius * (1 / screenRatio);
+          const relRY = baseRadius * screenRatio;
+          
+          this.roundTexture = this.applyRoundedMask(p, img, relRX, relRY);
 
           this.redraw(); // Redessiner une fois l’image prête
         });
@@ -65,7 +70,7 @@ class CanvasManager {
         const scrollDepthPx = (this.getScrollDepth() / 100) * screenW;
 
         // 3) Pour chaque .rectangle
-        const count = 3;
+        const count = 10;
         for (let i = count - 1; i >= 0; i--) {
           const rectW = 2.5 * screenW;
           const rectH = 2.5 * screenH;
@@ -87,24 +92,6 @@ class CanvasManager {
 
           p.pop();
 
-          // p.push();
-          // p.translate(0, 0, z);
-
-          // p.translate(-rectW / 2, -rectH / 2);
-          // p.stroke(255, 0, 0, 100);
-          // const strokeDepth = 3;
-          // const coef = 1;
-          // p.strokeWeight(strokeDepth);
-          // p.noFill();
-          // // p.rectMode(p.CENTER);
-          // p.rect(
-          //   -strokeDepth*.5,
-          //   -strokeDepth*.5,
-          //   rectW + strokeDepth ,
-          //   rectH + strokeDepth,
-          //   this.radiusPx
-          // );
-          // p.pop();
         }
 
         this.shouldDraw = false;
@@ -219,4 +206,50 @@ class CanvasManager {
     img.mask(masked);
     return img;
   }
+  createTriangleTextures(p, depth = 0.5) {
+    const w = p.width;
+    const h = p.height;
+    const vertiFade = 0.3;
+    const results = [];
+  
+    for (let i = 0; i < 3; i++) {
+      const g = p.createGraphics(w, h);
+      const ctx = g.elt.getContext("2d");
+  
+      const gradV = ctx.createLinearGradient(0, h / 2, 0, h);
+      gradV.addColorStop(depth, "rgba(0,0,0,0)");
+      gradV.addColorStop(1.0, "rgba(0, 0, 0, 0.7)");
+  
+      ctx.fillStyle = gradV;
+      this.drawTriangleShape(ctx, w, h);
+  
+      if (i === 1 || i === 2) {
+        const fadeStart = i === 1 ? w * 0.5 - w * vertiFade : w * 0.5 + w * vertiFade;
+        const fadeEnd = i === 1 ? w : 0;
+  
+        const gradH = ctx.createLinearGradient(fadeStart, 0, fadeEnd, 0);
+        gradH.addColorStop(0, "rgba(255,255,255,0)");
+        gradH.addColorStop(1, "rgba(255,255,255,1)");
+  
+        ctx.globalCompositeOperation = "destination-in";
+        ctx.fillStyle = gradH;
+        this.drawTriangleShape(ctx, w, h);
+        ctx.globalCompositeOperation = "source-over";
+      }
+  
+      results.push(g);
+    }
+  
+    return results;
+  }
+  
+  drawTriangleShape(ctx, w, h) {
+    ctx.beginPath();
+    ctx.moveTo(w / 2, h / 2);
+    ctx.lineTo(0, h);
+    ctx.lineTo(w, h);
+    ctx.closePath();
+    ctx.fill();
+  }
+  
 }
