@@ -53,7 +53,7 @@ body {
     height: 100dvh; 
     margin: 0;
     cursor: crosshair;
-    /* background: linear-gradient(0deg, #efefef 0%, white 41%, white 53%, #bebebe 100%); */
+    background: linear-gradient(0deg, #efefef 0%, white 41%, white 53%, #bebebe 100%);
 }
 .rectangle {
     /* display: none; */
