@@ -49,44 +49,14 @@ body {
         "wdth" 112.5;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    width: 100vw;
-    height: 100dvh; 
+    /* width: 100vw;
+    height: 100dvh;  */
     margin: 0;
     cursor: crosshair;
     background: linear-gradient(0deg, #efefef 0%, white 41%, white 53%, #bebebe 100%);
 }
-.rectangle {
-    /* display: none; */
-    border-radius: 3.5rem;
-    position: absolute;
-    pointer-events: none;
-    top: 50%;
-    left: -25vw;
-    width: 250vw;
-    height: 250vh;
-    transform-style: preserve-3d;
-    transform-origin: center center;
-    transform: translateX(75vw) translateZ(calc(var(--scroll-depth) - 150vw + 300vw* var(--index)* -1)) translate(-50%, -50%);
-    border: 2px solid var(--color-black);
-    box-sizing: border-box;
-    /* transform: translateX(var(--base-translate-x)) translateZ(calc(var(--scroll-depth) - var(--halfSizeWall) + var(--sizeWall)* var(--index)* -1)) translate(-50%, -50%); */
-    /* background: rgba(148, 148, 148, 0.756); */
-    /* background: linear-gradient(0deg, rgb(221 221 221) 0%, rgb(9 9 121 / 6%) 20%, rgb(255 255 255 / 8%) 44%); */
-  }
-  .rectangle_test {
-    border-radius: 1rem;
-    position: absolute;
-    pointer-events: none;
-    top: 50%;
-    left: 50%;
-    width: 50vw;
-    height: 50vh;
-    background: rgba(148, 148, 148, 0.756); /* 🟥 Couleur rouge transparente pour bien voir */
-    transform-style: preserve-3d;
-    transform-origin: center center;
-    transform: translate(-50%, -50%) translateZ(calc(var(--scroll-depth) + var(--sizeWall) * var(--index) * -1));
-    z-index: 1000;
-  }
+
+
 
 p {
     font-size: var(--font-size);
@@ -113,9 +83,9 @@ p {
     perspective: var(--perspective);
     perspective-origin: 50% 50%;
     position: relative;
-    z-index: 1000;
-    width: 100%;
-    height: 100%;
+    /* z-index: 1000; */
+    width: 100vw;
+    height: 100dvh; 
 
     /* opacity: 0;   */
 }
@@ -130,6 +100,7 @@ p {
     position: absolute;
     width: var(--sizeWall);
     height: 100%;
+    z-index: 1000;
 }
 
 .wall .grid {
@@ -277,7 +248,7 @@ table th {
 
 .wall.right .grid {
     border-radius: 7rem;
-    background: rgb(255, 255, 255);
+    /* background: rgb(255, 255, 255); */
     /* background: linear-gradient(-90deg, rgb(221 221 221) 0%, rgb(9 9 121 / 6%) 20%, rgb(255 255 255 / 8%) 44%); */
     transform-origin: center right;
     -webkit-transform-origin: center right;
@@ -289,7 +260,7 @@ table th {
 
 .wall.left .grid {
     border-radius: 7rem;
-    background: rgb(255, 255, 255);
+    /* background: rgb(255, 255, 255); */
     /* background: linear-gradient(90deg, rgb(221 221 221) 0%, rgb(9 9 121 / 6%) 20%, rgb(255 255 255 / 8%) 44%); */
 }
 .wall.left {
@@ -308,7 +279,7 @@ table th {
 }
 
 .grid video {
-   display: none;
+   /* display: none; */
     object-position: center;
     transform: scale(var(--vidScale));
     width: 100%;
@@ -581,7 +552,7 @@ table th {
 }
 
 .grid .cell {
-    display: none;
+    /* display: none; */
     flex-direction: column;
     gap: 80px;
     margin: 80px 0;

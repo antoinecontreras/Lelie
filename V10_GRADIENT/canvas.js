@@ -7,6 +7,8 @@ class CanvasManager {
           window.innerHeight,
           p.WEBGL
         );
+        const sceneEl = document.querySelector('.scene');
+      sceneEl.insertBefore(this.canvas.elt, sceneEl.firstChild);
         // Configuration du blending pour l'alpha
         p._renderer.GL.enable(p._renderer.GL.BLEND);
         p._renderer.GL.blendFunc(
@@ -16,7 +18,9 @@ class CanvasManager {
         p.pixelDensity(2);
         this.canvas.position(0, 0);
         this.canvas.style("pointer-events", "none");
-        this.canvas.style("z-index", "9999");
+        this.canvas.style("z-index", "0");
+
+        
 
         p.clear();
         p.noLoop();
@@ -51,17 +55,12 @@ class CanvasManager {
 
         // Scroll (pour le positionnement en profondeur)
         const scrollDepthPx = (this.getScrollDepth() / 100) * screenW;
-        const TRI_CFG = [
-          { angle: 0, tex: 0, flipX: 1, swap: false }, // bas
-          { angle: p.HALF_PI, tex: 1, flipX: 1, swap: true }, // droite
-          { angle: -p.HALF_PI, tex: 1, flipX: -1, swap: true }, // gauche (miroir)
-        ];
 
-        const depth = 0.52; // ← si tu veux le faire varier
-        const texArr = this.getTriangleTextures(p, depth);
+        let depth = 0.52; // ← si tu veux le faire varier
         // Pour chaque rectangle (ici on teste avec 1 rectangle, count=1)
-        const count = 5;
+        const count = 4;
         for (let i = count - 1; i >= 0; i--) {
+          depth -= 0.3; // on diminue la profondeur à chaque itération
           const rectW = 2.5 * screenW;
           const rectH = 2.5 * screenH;
           // Calcul de la profondeur (ici statique par rapport à i)
@@ -77,19 +76,7 @@ class CanvasManager {
             rectW,
             rectH
           );
-          // for (const cfg of TRI_CFG) {
-          //   const pivotX = rectW * 0.5;
-          //   const pivotY = cfg.swap ? rectW * 0.5 : rectH * 0.5;
-          //   p.push();
-          //   p.translate(pivotX, pivotY);
-          //   p.rotateZ(cfg.angle);
-          //   if (cfg.flipX === -1) p.scale(-1, 1);
-          //   p.translate(-pivotX, -pivotY);
-          //   const w = cfg.swap ? rectH : rectW;
-          //   const h = cfg.swap ? rectW : rectH;
-          //   this.drawTriangleTexture(p, texArr[cfg.tex], w, h);
-          //   p.pop();
-          // }
+        
           p.pop();
           // }
         }
@@ -176,53 +163,55 @@ class CanvasManager {
 
   // Création de trois textures de triangle, une pour chaque orientation.
   // Le paramètre "depth" contrôle le point de départ du dégradé vertical (0.5 ici par exemple)
-  buildTriangleTextures(p, depth = 0.5) {
-    const w = p.width;
-    const h = p.height;
-    const vertiFade = 0.5;
-    const res = [];
+buildTriangleTextures(p, depth = 0.5) {
+  const w = p.width, h = p.height;
+  const vf = 0.5;               // fraction pour le fade horizontal
+  const apexFactor = 0.5;       // sommet à mi‑hauteur
+  const out = [];
 
-    // i == 0  ➔ bas (w × h)
-    {
-      const g = p.createGraphics(w, h, p.P2D);
-      const ctx = g.elt.getContext("2d");
-      const gradV = ctx.createLinearGradient(0, h / 2, 0, h);
-      gradV.addColorStop(depth, "rgba(0,0,0,0)");
-      gradV.addColorStop(1, "rgba(0,0,0,0.7)");
-      ctx.fillStyle = gradV;
-      this.drawTriangleShape(ctx, w, h);
-      res.push(g);
-    }
+  // configuration pour les 3 cas : [width, height, sideFlag]
+  const configs = [
+    [ w, h,   null  ],  // base
+    [ h, w,   0     ],  // côté droit
+    [ h, w,   1     ],  // côté gauche
+  ];
 
-    // i == 1 et 2 ➔ côtés (h × w)
-    for (let side = 0; side < 2; side++) {
-      const g = p.createGraphics(h, w, p.P2D);
-      const ctx = g.elt.getContext("2d");
+  for (const [W, H, side] of configs) {
+    const g   = p.createGraphics(W, H, p.P2D);
+    g.hide();
+    const ctx = g.elt.getContext("2d");
 
-      // dégradé vertical
-      const gradV = ctx.createLinearGradient(0, w / 2, 0, w);
-      gradV.addColorStop(depth, "rgba(0,0,0,0)");
-      gradV.addColorStop(1, "rgba(0,0,0,0.7)");
-      ctx.fillStyle = gradV;
-      this.drawTriangleShape(ctx, h, w);
+    // 1️⃣ Fade vertical de l'apex jusqu'en bas
+    const gradV = ctx.createLinearGradient(
+      0, H * apexFactor,
+      0, H
+    );
+    gradV.addColorStop(depth, "rgba(0,0,0,0)");
+    gradV.addColorStop(1,     "rgba(0, 0, 0, 0.8)");
+    ctx.fillStyle = gradV;
+    this.drawTriangleShape(ctx, W, H);
 
-      // dégradé horizontal pour la latéralité
-      const fadeStart =
-        side === 0 ? w * 0.5 - w * vertiFade : w * 0.5 + w * vertiFade;
-      const fadeEnd = side === 0 ? w : 0;
-      const gradH = ctx.createLinearGradient(fadeStart, 0, fadeEnd, 0);
-      gradH.addColorStop(0, "rgba(0, 0, 0, 0)");
-      gradH.addColorStop(1, "rgb(255, 255, 255)");
+    // 2️⃣ Si c'est un côté, on ajoute le masque horizontal
+    if (side !== null) {
+      // calcule du décalage de début / fin
+      const startX = H * (0.5 + (side === 0 ? -vf : vf));
+      const endX   = side === 0 ? H : 0;
+
+      const gradH = ctx.createLinearGradient(startX, 0, endX, 0);
+      gradH.addColorStop(0, "rgba(0,0,0,0)");
+      gradH.addColorStop(1, "rgba(255,255,255,1)");
+
       ctx.globalCompositeOperation = "destination-in";
       ctx.fillStyle = gradH;
-      this.drawTriangleShape(ctx, h, w);
+      this.drawTriangleShape(ctx, W, H);
       ctx.globalCompositeOperation = "source-over";
-
-      res.push(g);
     }
 
-    return res; // [bas, coté‑droit, coté‑gauche]
+    out.push(g);
   }
+
+  return out;  // [base, side‑right, side‑left]
+}
 
   drawTriangleShape(ctx, w, h) {
     // Facteur de l'apex : ajuste ici pour modifier la hauteur du triangle.
@@ -236,7 +225,7 @@ class CanvasManager {
   }
 
   // Applique un masque de coins arrondis sur une image.
-  applyRoundedMask(p, img, relR = 0.025) {
+  applyRoundedMask(p, img, relR = 0.023) {
     const w = img.width;
     const h = img.height;
 
@@ -268,6 +257,7 @@ class CanvasManager {
     const h = p.height;
     // 1️⃣ on crée un buffer 2D
     const m = p.createGraphics(w, h, p.P2D);
+    m.hide();
     m.clear();
     m.imageMode(p.CENTER);
 
@@ -295,5 +285,10 @@ class CanvasManager {
 
     // 4️⃣ on applique le mask arrondi (border‐radius)
     return maskFn(mergedImg);
+  }
+  hover(side, isHovering) {
+    console.log("hover");
+    // this.hoveredSide = isHovering ? side : null;
+    // this.redraw();
   }
 }

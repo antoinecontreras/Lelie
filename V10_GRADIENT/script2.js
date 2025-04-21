@@ -80,15 +80,16 @@ window.addEventListener(
     manageCoverVideo();
     setTimeout(updateVideoScale, 500);
 
-    // 🚀 Créer ton canvas ici
     CANVAS_LAYER = new CanvasManager();
-    // CANVAS_LAYER.redraw(); 
-
 
     document.querySelector(".scene").style.opacity = "";
   },
   { passive: true }
 );
+document.querySelectorAll('.volet').forEach(el => {
+  el.addEventListener('mouseenter', () => canvasManager.hover(el.dataset.index, true));
+  el.addEventListener('mouseleave', () => canvasManager.hover(el.dataset.index, false));
+});
 
 function initEventListeners() {
   // 1) Détection device
@@ -116,7 +117,6 @@ function initEventListeners() {
   }
 
   // 3) Resize => updateVideoScale
-  
   window.addEventListener("resize", () => {
     updateVideoScale();
     // CANVAS_LAYER.resize();
@@ -338,7 +338,7 @@ function handleWheelEvent(e) {
   let scale = 1 + cycleProgress;
 
   // Injecter dans la variable CSS
-  document.documentElement.style.setProperty("--scale", scale);
+  // document.documentElement.style.setProperty("--scale", scale);
 
   document.documentElement.style.setProperty(
     "--scroll-depth",
