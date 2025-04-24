@@ -6,37 +6,19 @@ class CanvasManager {
         // 1️⃣ Charge tes vidéos ou images ici
         // Exemple avec images statiques :
         // this.textures[0] = p.loadImage("../IMG/1product Small.jpeg");
-        this.textures.push(
-          p.loadImage("../IMG/frame_05.jpg")
-        );
-        this.textures.push(
-          p.loadImage("../IMG/frame_06.jpg")
-        );
-        this.textures.push(
-          p.loadImage("../IMG/p_a.jpg")
-        );
-        this.textures.push(
-          p.loadImage("../IMG/p_b.jpg")
-        );
+        this.textures.push(p.loadImage("../IMG/frame_05.jpg"));
+        this.textures.push(p.loadImage("../IMG/frame_06.jpg"));
+        this.textures.push(p.loadImage("../IMG/p_a.jpg"));
+        this.textures.push(p.loadImage("../IMG/p_b.jpg"));
 
-        this.textures.push(
-          p.loadImage("../IMG/frame_06.jpg")
-        );
+        this.textures.push(p.loadImage("../IMG/frame_06.jpg"));
 
-        this.textures.push(
-          p.loadImage("../IMG/frame_05.jpg")
-        );
+        this.textures.push(p.loadImage("../IMG/frame_05.jpg"));
 
-        this.textures.push(
-          p.loadImage("../IMG/p_b.jpg")
-        );
+        this.textures.push(p.loadImage("../IMG/p_b.jpg"));
 
-        this.textures.push(
-          p.loadImage("../IMG/p_a.jpg")
-        );
-    
-  
-     
+        this.textures.push(p.loadImage("../IMG/p_a.jpg"));
+
         // this.textures[1] = p.loadImage('assets/side.jpg');
         // this.textures[2] = p.loadImage('assets/side.jpg');
       };
@@ -54,7 +36,7 @@ class CanvasManager {
           p._renderer.GL.SRC_ALPHA,
           p._renderer.GL.ONE_MINUS_SRC_ALPHA
         );
-        // p.pixelDensity(0.05);
+        // p.pixelDensity(0.2);
         this.canvas.position(0, 0);
         this.canvas.style("pointer-events", "none");
         this.canvas.style("image-rendering", "pixelated");
@@ -74,80 +56,66 @@ class CanvasManager {
         this.lastTexW = 0; // ← mémorisera la taille des textures
         this.lastTexH = 0;
         this.lastDepth = 0.5;
-        this.voletTex = this.buildVoletTexture(p, 800, 600, 20);
+        this.sw = window.innerWidth;
+        this.sh = window.innerHeight;
+        this.rectW = 2.5 * this.sw;
+        this.rectH = 2.5 * this.sh;
+        // this.volets = [];
+        this.VOLETS_CFG = [
+          // panneau avant
+          { texKind: "merged", x: 0, y: 0, angle: 0, swapUV: false },
+          // volet droit
+          {
+            texKind: "frame",
+            x: this.rectW,
+            y: this.rectH / 2,
+            angle: -90,
+            swapUV: true,
+          },
+          // volet gauche
+          { texKind: "frame", x: 0, y: this.rectH / 2, angle: 90, swapUV: true },
+        ];
       };
 
       p.draw = () => {
-      
         if (!this.shouldDraw) return;
-
-        // p.clear();
-        p.background(255,0);
+        p.clear();
         p.noStroke();
-        const screenW = window.innerWidth;
-        const screenH = window.innerHeight;
+        // const screenW = window.innerWidth;
+        // const screenH = window.innerHeight;
 
-        // Perspective et caméra
-        const perspectivePx = screenW;
-        const fov = 2 * Math.atan(screenH / 2 / perspectivePx);
-        this.cam.setPosition(0, 0, perspectivePx);
+        // 1) cam + perspective (tel que tu avais)
+        const perspectivePx = this.sw;
+        const fov = 2 * Math.atan(this.sh / 2 / perspectivePx);
+        // this.cam.setPosition(0,0,perspectivePx);
         this.cam.perspective(fov, p.width / p.height, 0.1, 50000);
-        this.cam.lookAt(0, 0, 0);
+        // this.cam.lookAt(0,0,0);
 
-        // Scroll (pour le positionnement en profondeur)
-        const scrollDepthPx = (this.getScrollDepth() / 100) * screenW;
-        // console.log(scrollDepthPx);
-        p.pixelDensity(p.map(scrollDepthPx, 0,15000, 0.06, 0.4, true));
-
-        const sw = window.innerWidth,
-        sh = window.innerHeight,
-        w = 2 * sw,
-        h = 2.5 * sh,
-        halfWall = 2.5 * sw,
-        rightX = halfWall * 0.5,
-        rectW = 2.5 * sw,
-        rectH = 2.5 * sh,
-        TRI_CFG = [
-          // x-offset,    y-offset, z-offset,     rotationY (deg)
-          [  0,   h/2, -w*0.75,  90 ],   // volet gauche
-          [ rightX*2, h/2, -w*0.75,  90 ]  // volet droite
-        ];
   
-  // Ta boucle, réduite à l’essentiel :
-  const count = 2;
-  // console.log(this.textures.length);
-  this.textures.forEach((frame, index) => {
-  // for (let i = count - 1; i >= 0; i--) {
-    const reverseIndex = this.textures.length - 1 - index; // Calculer l'index inversé
-    const z = scrollDepthPx - sw * 1.5 - sw * 3 * reverseIndex;
-  
-    p.push();
-      p.translate(0, 0, z);
-      p.translate(-rectW/2, -rectH/2);
+         const scrollDepthPx = (this.getScrollDepth() / 100) * this.sw;
 
-      for (let [ xOff, yOff, zOff, rotY ] of TRI_CFG) {
-        this.drawWall(
-          p,
-          frame,
-          w * 1.5 - 20,
-          h,
-          xOff, yOff,
-          zOff,
-          rotY
-        );
-      }
-          this.drawTriangleTexture(
-            p,
-            this.mergedTri, // texture unique déjà fusionnée + arrondie
-            rectW,
-            rectH
-          );
+        this.textures.forEach((frameTex, idx) => {
+          const reverse = this.textures.length - 1 - idx;
+          const z = scrollDepthPx - this.sw * 1.5 - this.sw * 3 * reverse;
 
-          p.pop();
+          this.VOLETS_CFG.forEach((cfg) => {
+            // choisir la bonne texture
+            const tex = cfg.texKind === "merged" ? this.mergedTri : frameTex; // la frame courante
+
+            new Volet(p, tex, {
+              w: this.rectW,
+              h: this.rectH,
+              x: cfg.x,
+              y: cfg.y,
+              z,
+              angle: cfg.angle,
+              swapUV: cfg.swapUV,
+            }).draw();
+          });
         });
 
         this.shouldDraw = false;
-    };
+      };
 
       p.windowResized = () => {
         this.p5Instance.resizeCanvas(window.innerWidth, window.innerHeight);
@@ -156,8 +124,6 @@ class CanvasManager {
         this.redraw();
       };
     });
-
-    this.shouldDraw = false;
   }
   buildVoletTexture(p, w, h, borderRadius) {
     const g = p.createGraphics(w, h);
@@ -165,8 +131,7 @@ class CanvasManager {
     g.noStroke();
     // ici tu peux remplacer par ton dégradé ou vidéo
     // g.fill(25, 105);
-    
-   
+
     g.rect(0, 0, w, h, borderRadius);
     return g;
   }
