@@ -36,7 +36,8 @@ class CanvasManager {
           p._renderer.GL.SRC_ALPHA,
           p._renderer.GL.ONE_MINUS_SRC_ALPHA
         );
-        // p.pixelDensity(0.2);
+        // p.pixelDensity(0.1);
+        // p.pixelDensity(1);
         this.canvas.position(0, 0);
         this.canvas.style("pointer-events", "none");
         this.canvas.style("image-rendering", "pixelated");
@@ -60,48 +61,43 @@ class CanvasManager {
         this.sh = window.innerHeight;
         this.rectW = 2.5 * this.sw;
         this.rectH = 2.5 * this.sh;
-        // this.volets = [];
-        this.VOLETS_CFG = [
-          // panneau avant
-          { texKind: "merged", x: 0, y: 0, angle: 0, swapUV: false },
-          // volet droit
-          {
-            texKind: "frame",
-            x: this.rectW,
-            y: this.rectH / 2,
-            angle: -90,
-            swapUV: true,
-          },
-          // volet gauche
-          { texKind: "frame", x: 0, y: this.rectH / 2, angle: 90, swapUV: true },
-        ];
+
+        // On déplace merged (ombre frontale) **en dernier**,
+        // pour qu’elle soit dessinée par-dessus les volets latéraux
+        this._updateVoletsConfig();
+        p.windowResized = () => {
+          this._updateVoletsConfig();
+          this.p5Instance.resizeCanvas(window.innerWidth, window.innerHeight);
+          this._resize(); // recrée textures et volets avec les bonnes dimensions
+          this.shouldDraw = true;
+        };
       };
 
       p.draw = () => {
         if (!this.shouldDraw) return;
         p.clear();
         p.noStroke();
-        // const screenW = window.innerWidth;
-        // const screenH = window.innerHeight;
 
         // 1) cam + perspective (tel que tu avais)
-        const perspectivePx = this.sw;
-        const fov = 2 * Math.atan(this.sh / 2 / perspectivePx);
-        // this.cam.setPosition(0,0,perspectivePx);
+        const sw = this.sw,
+          sh = this.sh;
+        const perspectivePx = sw;
+        const fov = 2 * Math.atan(sh / 2 / perspectivePx);
         this.cam.perspective(fov, p.width / p.height, 0.1, 50000);
-        // this.cam.lookAt(0,0,0);
-
-  
-         const scrollDepthPx = (this.getScrollDepth() / 100) * this.sw;
-
+        // profondeur du scroll
+        const scrollDepthPx = (this.getScrollDepth() / 100) * sw;
+        // const test = p.map(p.cos(scrollDepthPx / 600), -1, 1, 0.05, 0.15);
+        // p.pixelDensity(test);
+        // boucle sur chaque “frame” de ton tunnel
         this.textures.forEach((frameTex, idx) => {
-          const reverse = this.textures.length - 1 - idx;
-          const z = scrollDepthPx - this.sw * 1.5 - this.sw * 3 * reverse;
+          const rev = this.textures.length - 1 - idx;
+          // const z = scrollDepthPx - sw * 1.5 - sw * 3 * rev;
+          const z = scrollDepthPx -sw *  2.5 * rev-sw;
+            // const z = scrollDepthPx - sw * -1.5 - sw * 3 * rev -  sw * -0.5 * rev;
 
+          // pour chaque volet (avant / droite / gauche)
           this.VOLETS_CFG.forEach((cfg) => {
-            // choisir la bonne texture
-            const tex = cfg.texKind === "merged" ? this.mergedTri : frameTex; // la frame courante
-
+            const tex = cfg.texKind === "merged" ? this.mergedTri : frameTex;
             new Volet(p, tex, {
               w: this.rectW,
               h: this.rectH,
@@ -117,13 +113,57 @@ class CanvasManager {
         this.shouldDraw = false;
       };
 
-      p.windowResized = () => {
-        this.p5Instance.resizeCanvas(window.innerWidth, window.innerHeight);
-        this.lastTexW = this.lastTexH = 0; // force rebuild
-        this.updatePerspective();
-        this.redraw();
-      };
+
     });
+  }
+  _computeDepth() {
+    const r = this.sh / this.sw;
+    // map(r, r_min, r_max, depth_max, depth_min, clamp)
+    return p5.prototype.map(r, 0.5, 2.0, 0.6, 0.4, true);
+  }
+
+  _resize() {
+    // stocke les nouvelles dimensions
+    this.sw = window.innerWidth;
+    this.sh = window.innerHeight;
+    this.rectW = this.sw * 2.5;
+    this.rectH = this.sh * 2.5;
+
+    // 1) (Re)crée tes textures de shadow-only triangles si besoin
+    this.triangleTextures = this.buildTriangleTextures(this.p5Instance, 0.5);
+    this.mergedTri = this.buildMergedTriangle(
+      this.p5Instance,
+      this.triangleTextures,
+      this.applyRoundedMask.bind(this, this.p5Instance)
+    );
+
+    // 2) Instancie une fois tes Volets
+    //    On stocke seulement la config statique : x,y,angle,swapUV + kind de texture
+    const cfgList = [
+      {
+        texKind: "merged",
+        x: this.rectW / 2,
+        y: this.rectH / 2,
+        angle: 0,
+        swapUV: false,
+      },
+      {
+        texKind: "frame",
+        x: this.rectW,
+        y: this.rectH / 2,
+        angle: -90,
+        swapUV: false,
+      },
+      { texKind: "frame", x: 0, y: this.rectH / 2, angle: 90, swapUV: false },
+    ];
+    this.volets = cfgList.map(
+      (cfg) =>
+        new Volet(
+          this.p5Instance,
+          /* tex */ null,
+          /* cfg */ { ...cfg, w: this.rectW, h: this.rectH, z: 0 }
+        )
+    );
   }
   buildVoletTexture(p, w, h, borderRadius) {
     const g = p.createGraphics(w, h);
@@ -135,7 +175,28 @@ class CanvasManager {
     g.rect(0, 0, w, h, borderRadius);
     return g;
   }
-
+  _updateVoletsConfig() {
+    this.VOLETS_CFG = [
+      // 1) volet droit
+      {
+        texKind: "frame",
+        x: this.rectW,
+        y: 0,
+        angle: -90,
+        swapUV: false,
+      },
+      // 2) volet gauche
+      { texKind: "frame", x: 0, y: this.rectH / 2, angle: 90, swapUV: false },
+      
+      {
+        texKind: "merged",
+        x: this.rectW / 2,
+        y: this.rectH / 2,
+        angle: 0,
+        swapUV: false,
+      },
+    ];
+  }
   // dessine un plan w×h texturé à la position (x,y,z) et tourné en Y à angleDeg (en degrés)
   drawWall(p, tex, w, h, x, y, z, angleDeg) {
     p.push();
@@ -223,39 +284,37 @@ class CanvasManager {
   buildTriangleTextures(p, depth = 0.5) {
     const w = p.width,
       h = p.height;
-    const vf = 0.5; // fraction pour le fade horizontal
-    const apexFactor = 0.5; // sommet à mi‑hauteur
+    const vf = 0.5,
+      apexFactor = 0.5;
     const out = [];
 
-    // configuration pour les 3 cas : [width, height, sideFlag]
+    // configs pour base, côté-droit et côté-gauche
     const configs = [
-      [w, h, null], // base
-      [h, w, 0], // côté droit
-      [h, w, 1], // côté gauche
+      [w, h, null],
+      [h, w, 0],
+      [h, w, 1],
     ];
 
     for (const [W, H, side] of configs) {
       const g = p.createGraphics(W, H, p.P2D);
-      g.hide();
       const ctx = g.elt.getContext("2d");
+      // ➊ on vide tout
+      ctx.clearRect(0, 0, W, H);
 
-      // 1️⃣ Fade vertical de l'apex jusqu'en bas
+      // ➋ fade vertical
       const gradV = ctx.createLinearGradient(0, H * apexFactor, 0, H);
       gradV.addColorStop(depth, "rgba(0,0,0,0)");
-      gradV.addColorStop(1, "rgba(0, 0, 0, 0.65)");
+      gradV.addColorStop(1, "rgba(0,0,0,0.65)");
       ctx.fillStyle = gradV;
       this.drawTriangleShape(ctx, W, H);
 
-      // 2️⃣ Si c'est un côté, on ajoute le masque horizontal
+      // ➌ masque horizontal pour les côtés
       if (side !== null) {
-        // calcule du décalage de début / fin
         const startX = H * (0.5 + (side === 0 ? -vf : vf));
         const endX = side === 0 ? H : 0;
-
         const gradH = ctx.createLinearGradient(startX, 0, endX, 0);
         gradH.addColorStop(0, "rgba(0,0,0,0)");
         gradH.addColorStop(1, "rgba(255,255,255,1)");
-
         ctx.globalCompositeOperation = "destination-in";
         ctx.fillStyle = gradH;
         this.drawTriangleShape(ctx, W, H);
@@ -265,7 +324,7 @@ class CanvasManager {
       out.push(g);
     }
 
-    return out; // [base, side‑right, side‑left]
+    return out; // [base, side-right, side-left]
   }
 
   drawTriangleShape(ctx, w, h) {
