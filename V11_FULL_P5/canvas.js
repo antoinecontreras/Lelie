@@ -28,6 +28,7 @@ class CanvasManager {
           window.innerHeight,
           p.WEBGL
         );
+        // this.scrollDepthPx = 0;
         const sceneEl = document.querySelector(".scene");
         sceneEl.parentNode.insertBefore(this.canvas.elt, sceneEl);
         // Configuration du blending pour l'alpha
@@ -61,16 +62,57 @@ class CanvasManager {
         this.sh = window.innerHeight;
         this.rectW = 2.5 * this.sw;
         this.rectH = 2.5 * this.sh;
+        this.rawScroll = 0;
+        this.SCROLL_FACTOR = 1;        // ← à ajuster pour gagner plus ou moins de profondeur par wheel
+        this.baseOffset1000 = 73.94;  
+        this.gapZ = 0.05; // 20% de sw en plus entre chaque panneau
+        this._updateSpacing();
+        this.scrollRatio = this.panelSpacing / this.sw;
+        const rawScroll = this.getScrollDepth(); // Added back to compute rawScroll
+        // this.scrollDepthPx = this.rawScroll * this.scrollRatio; // Updated to reflect the change
 
-        // On déplace merged (ombre frontale) **en dernier**,
-        // pour qu’elle soit dessinée par-dessus les volets latéraux
         this._updateVoletsConfig();
         p.windowResized = () => {
+          this.sw = window.innerWidth;
+          this.sh = window.innerHeight;
+          this.rectW = 2.5 * this.sw;
+          this.rectH = 2.5 * this.sh;
+          this.lastTexW = this.lastTexH = 0;
+          this._updateSpacing(); // <— on recalcule spacing & offset
+          this.scrollRatio = this.panelSpacing / this.sw;
+          // this._resize(); // recrée textures et volets avec les bonnes dimensions
           this._updateVoletsConfig();
           this.p5Instance.resizeCanvas(window.innerWidth, window.innerHeight);
-          this._resize(); // recrée textures et volets avec les bonnes dimensions
           this.shouldDraw = true;
+          this.p5Instance.loop();
+
+          // console.log(this.rawScroll);
+          // console.log("scrollRatio", this.scrollRatio);
+          // console.log("scrollDepthPx", this.scrollDepthPx);
         };
+        window.addEventListener(
+          "wheel",
+          (e) => {
+            // empêche le scroll de la page
+            e.preventDefault();
+
+            // incrémente ou décrémente
+            this.rawScroll += e.deltaY;
+
+            // optionnel : borne le scroll pour ne pas sortir du tunnel
+            // const maxSteps = this.textures.length - 1;
+            // const maxRaw = maxSteps * this.sw;
+            // this.rawScroll = Math.max(this.rawScroll, -maxRaw);
+            // console.log(this.rawScroll);
+            // console.log("scrollRatio", this.scrollRatio);
+            // console.log("scrollDepthPx", this.scrollDepthPx);
+
+            // redessine immédiatement
+            this.shouldDraw = true;
+            this.p5Instance.loop();
+          },
+          { passive: false }
+        );
       };
 
       p.draw = () => {
@@ -81,20 +123,35 @@ class CanvasManager {
         // 1) cam + perspective (tel que tu avais)
         const sw = this.sw,
           sh = this.sh;
-        const perspectivePx = sw;
-        const fov = 2 * Math.atan(sh / 2 / perspectivePx);
-        this.cam.perspective(fov, p.width / p.height, 0.1, 50000);
-        // profondeur du scroll
-        const scrollDepthPx = (this.getScrollDepth() / 100) * sw;
+        // const perspectivePx = sw;
+        const perspectivePx = 800;
+   
+        // const fov = 2 * Math.atan(sh / 2 / perspectivePx);
+        const fovy =1;
+        this.cam.perspective(fovy, p.width / p.height, 0.1, 50000);
+        
+
+        // 3) conversion VW→px pour la profondeur
+        const scrollDepthFromWheel = (this.rawScroll / 1000) * sw;
+        const gRatio = p.map(this.rectW, 1055, 1421, -94.95, 568.4);
+        
+        this.scrollDepthPx = gRatio-this.panelSpacing+scrollDepthFromWheel;
+        
+      
+        console.log(
+          `sw=${sw}`,
+          `scrollDepthFromWheel=${scrollDepthFromWheel}`,
+          `scrollDepthPx=${this.scrollDepthPx}`
+        );
+        // On déplace merged (ombre frontale) **en dernier**,
+        // pour qu’elle soit dessinée par-dessus les volets latéraux
         // const test = p.map(p.cos(scrollDepthPx / 600), -1, 1, 0.05, 0.15);
         // p.pixelDensity(test);
         // boucle sur chaque “frame” de ton tunnel
         this.textures.forEach((frameTex, idx) => {
           const rev = this.textures.length - 1 - idx;
-          // const z = scrollDepthPx - sw * 1.5 - sw * 3 * rev;
-          const z = scrollDepthPx -sw *  2.5 * rev-sw;
-            // const z = scrollDepthPx - sw * -1.5 - sw * 3 * rev -  sw * -0.5 * rev;
-
+          const z =
+            this.scrollDepthPx - this.panelOffset - rev * this.panelSpacing;
           // pour chaque volet (avant / droite / gauche)
           this.VOLETS_CFG.forEach((cfg) => {
             const tex = cfg.texKind === "merged" ? this.mergedTri : frameTex;
@@ -109,13 +166,23 @@ class CanvasManager {
             }).draw();
           });
         });
-
         this.shouldDraw = false;
       };
-
-
     });
   }
+
+  _updateSpacing() {
+    // Espacement entre deux panneaux
+    this.panelSpacing = this.rectW + this.gapZ * this.sw;
+
+    // Nombre de panneaux (le même que this.textures.length)
+    const N = this.textures.length;
+
+    // Détermine la moitié de l’étendue totale de la pile :
+    // (N-1) intervalles → (N-1)*panelSpacing, et on en prend la moitié
+    this.panelOffset = (N - 1) * this.panelSpacing * 0.1;
+  }
+
   _computeDepth() {
     const r = this.sh / this.sw;
     // map(r, r_min, r_max, depth_max, depth_min, clamp)
@@ -169,15 +236,12 @@ class CanvasManager {
     const g = p.createGraphics(w, h);
     g.clear();
     g.noStroke();
-    // ici tu peux remplacer par ton dégradé ou vidéo
-    // g.fill(25, 105);
 
     g.rect(0, 0, w, h, borderRadius);
     return g;
   }
   _updateVoletsConfig() {
     this.VOLETS_CFG = [
-      // 1) volet droit
       {
         texKind: "frame",
         x: this.rectW,
@@ -185,9 +249,8 @@ class CanvasManager {
         angle: -90,
         swapUV: false,
       },
-      // 2) volet gauche
       { texKind: "frame", x: 0, y: this.rectH / 2, angle: 90, swapUV: false },
-      
+
       {
         texKind: "merged",
         x: this.rectW / 2,
