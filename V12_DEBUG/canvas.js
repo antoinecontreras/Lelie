@@ -168,11 +168,7 @@ class CanvasManager {
     this.panelOffset = (N - 1) * this.panelSpacing * 0.1;
   }
 
-  _computeDepth() {
-    const r = this.sh / this.sw;
-    // map(r, r_min, r_max, depth_max, depth_min, clamp)
-    return p5.prototype.map(r, 0.5, 2.0, 0.6, 0.4, true);
-  }
+
 
   _resize() {
     // stocke les nouvelles dimensions
@@ -246,21 +242,7 @@ class CanvasManager {
     ];
   }
   // dessine un plan w×h texturé à la position (x,y,z) et tourné en Y à angleDeg (en degrés)
-  drawWall(p, tex, w, h, x, y, z, angleDeg) {
-    p.push();
-    p.translate(x, y, z);
-    p.rotateY((angleDeg * Math.PI) / 180);
-    p.translate(-w / 2, -h / 2, 0);
-    p.textureMode(p.NORMAL);
-    p.texture(tex);
-    p.beginShape();
-    p.vertex(0, 0, 0, 0);
-    p.vertex(w, 0, 1, 0);
-    p.vertex(w, h, 1, 1);
-    p.vertex(0, h, 0, 1);
-    p.endShape(p.CLOSE);
-    p.pop();
-  }
+
   redraw() {
     this.shouldDraw = true;
     this.p5Instance.loop();
@@ -293,18 +275,7 @@ class CanvasManager {
     return sizeWall;
   }
 
-  // Affiche le triangle texturé avec mapping UV sur une forme rectangle.
-  drawTriangleTexture(p, tex, w, h) {
-    p.noStroke();
-    p.textureMode(p.NORMAL);
-    p.texture(tex);
-    p.beginShape();
-    p.vertex(0, 0, 0, 0);
-    p.vertex(w, 0, 1, 0);
-    p.vertex(w, h, 1, 1);
-    p.vertex(0, h, 0, 1);
-    p.endShape(p.CLOSE);
-  }
+
 
   getTriangleTextures(p, depth = 0.5) {
     // Taille courante du canvas

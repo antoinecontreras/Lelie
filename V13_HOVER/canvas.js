@@ -3,24 +3,14 @@ class CanvasManager {
     this.p5Instance = new p5((p) => {
       this.textures = [];
       p.preload = () => {
-        // 1️⃣ Charge tes vidéos ou images ici
-        // Exemple avec images statiques :
-        // this.textures[0] = p.loadImage("../IMG/1product Small.jpeg");
         this.textures.push(p.loadImage("../IMG/frame_05.jpg"));
         this.textures.push(p.loadImage("../IMG/frame_06.jpg"));
         this.textures.push(p.loadImage("../IMG/p_a.jpg"));
         this.textures.push(p.loadImage("../IMG/p_b.jpg"));
-
         this.textures.push(p.loadImage("../IMG/frame_06.jpg"));
-
         this.textures.push(p.loadImage("../IMG/frame_05.jpg"));
-
         this.textures.push(p.loadImage("../IMG/p_b.jpg"));
-
         this.textures.push(p.loadImage("../IMG/p_a.jpg"));
-
-        // this.textures[1] = p.loadImage('assets/side.jpg');
-        // this.textures[2] = p.loadImage('assets/side.jpg');
       };
       p.setup = () => {
         this.canvas = p.createCanvas(
@@ -28,17 +18,16 @@ class CanvasManager {
           window.innerHeight,
           p.WEBGL
         );
-        // this.scrollDepthPx = 0;
+
         const sceneEl = document.querySelector(".scene");
         sceneEl.parentNode.insertBefore(this.canvas.elt, sceneEl);
-        // Configuration du blending pour l'alpha
+
         p._renderer.GL.enable(p._renderer.GL.BLEND);
         p._renderer.GL.blendFunc(
           p._renderer.GL.SRC_ALPHA,
           p._renderer.GL.ONE_MINUS_SRC_ALPHA
         );
-        // p.pixelDensity(0.1);
-        // p.pixelDensity(1);
+
         this.canvas.position(0, 0);
         this.canvas.style("pointer-events", "none");
         this.canvas.style("image-rendering", "pixelated");
@@ -48,14 +37,14 @@ class CanvasManager {
         p.noLoop();
         this.cam = p.createCamera();
 
-        this.triangleTextures = this.buildTriangleTextures(p, 0.5); //0.5
+        this.triangleTextures = this.buildTriangleTextures(p, 0.5);
         this.mergedTri = this.buildMergedTriangle(
           p,
           this.triangleTextures,
-          this.applyRoundedMask.bind(this, p) // on passe la fonction de masque
+          this.applyRoundedMask.bind(this, p)
         );
         this.shouldDraw = true;
-        this.lastTexW = 0; // ← mémorisera la taille des textures
+        this.lastTexW = 0;
         this.lastTexH = 0;
         this.lastDepth = 0.5;
         this.sw = window.innerWidth;
@@ -63,14 +52,12 @@ class CanvasManager {
         this.rectW = 2.5 * this.sw;
         this.rectH = 2.5 * this.sh;
         this.rawScroll = 0;
-        this.SCROLL_FACTOR = 1;        // ← à ajuster pour gagner plus ou moins de profondeur par wheel
-        this.baseOffset1000 = 73.94;  
-        this.gapZ = 0.05; // 20% de sw en plus entre chaque panneau
+        this.SCROLL_FACTOR = 1;
+        this.baseOffset1000 = 73.94;
+        this.gapZ = 0.05;
         this._updateSpacing();
         this.scrollRatio = this.panelSpacing / this.sw;
-        const rawScroll = this.getScrollDepth(); // Added back to compute rawScroll
-        // this.scrollDepthPx = this.rawScroll * this.scrollRatio; // Updated to reflect the change
-
+        this.baseScroll = this.rawScroll * (this.sw / 1000);
         this._updateVoletsConfig();
         p.windowResized = () => {
           this.sw = window.innerWidth;
@@ -78,38 +65,29 @@ class CanvasManager {
           this.rectW = 2.5 * this.sw;
           this.rectH = 2.5 * this.sh;
           this.lastTexW = this.lastTexH = 0;
-          this._updateSpacing(); // <— on recalcule spacing & offset
+          this._updateSpacing();
           this.scrollRatio = this.panelSpacing / this.sw;
-          // this._resize(); // recrée textures et volets avec les bonnes dimensions
+
           this._updateVoletsConfig();
           this.p5Instance.resizeCanvas(window.innerWidth, window.innerHeight);
           this.shouldDraw = true;
           this.p5Instance.loop();
-
-          // console.log(this.rawScroll);
-          // console.log("scrollRatio", this.scrollRatio);
-          // console.log("scrollDepthPx", this.scrollDepthPx);
         };
         window.addEventListener(
           "wheel",
           (e) => {
-            // empêche le scroll de la page
             e.preventDefault();
-
-            // incrémente ou décrémente
-            this.rawScroll += e.deltaY;
-
-            // optionnel : borne le scroll pour ne pas sortir du tunnel
-            // const maxSteps = this.textures.length - 1;
-            // const maxRaw = maxSteps * this.sw;
-            // this.rawScroll = Math.max(this.rawScroll, -maxRaw);
-            // console.log(this.rawScroll);
-            // console.log("scrollRatio", this.scrollRatio);
-            // console.log("scrollDepthPx", this.scrollDepthPx);
-
-            // redessine immédiatement
-            this.shouldDraw = true;
-            this.p5Instance.loop();
+            const newRawScroll = this.rawScroll + e.deltaY;
+            const newBaseScroll = newRawScroll * (this.sw / 1000);
+            if (newBaseScroll > 0) {
+              this.rawScroll = newRawScroll;
+              this.baseScroll = newBaseScroll;
+              this.shouldDraw = true;
+              this.p5Instance.loop();
+            } else {
+              this.rawScroll = 0;
+              this.baseScroll = 0;
+            }
           },
           { passive: false }
         );
@@ -120,24 +98,23 @@ class CanvasManager {
         p.clear();
         p.noStroke();
 
-        // 1) cam + perspective (tel que tu avais)
         const sw = this.sw,
           sh = this.sh;
-        // const perspectivePx = sw;
-   
-        // const fov = 2 * Math.atan(sh / 2 / perspectivePx);
+       
+
+         
         const fovy = p.map(sw, 1055, 1421, 1.055, 1.078);
         this.cam.perspective(fovy, p.width / p.height, 0.1, 50000);
 
-        const baseScroll = this.rawScroll * (this.sw / 1000);
+       
         const offset = p.map(this.rectW, 1055, 1421, -94.95, 568.4);
-        this.scrollDepthPx = offset - this.panelSpacing + baseScroll;
-  
+        this.scrollDepthPx = offset - this.panelSpacing + this.baseScroll;
+      
         this.textures.forEach((frameTex, idx) => {
           const rev = this.textures.length - 1 - idx;
           const z =
             this.scrollDepthPx - this.panelOffset - rev * this.panelSpacing;
-          // pour chaque volet (avant / droite / gauche)
+
           this.VOLETS_CFG.forEach((cfg) => {
             const tex = cfg.texKind === "merged" ? this.mergedTri : frameTex;
             new Volet(p, tex, {
@@ -157,31 +134,16 @@ class CanvasManager {
   }
 
   _updateSpacing() {
-    // Espacement entre deux panneaux
     this.panelSpacing = this.rectW + this.gapZ * this.sw;
-
-    // Nombre de panneaux (le même que this.textures.length)
-    const N = this.textures.length;
-
-    // Détermine la moitié de l’étendue totale de la pile :
-    // (N-1) intervalles → (N-1)*panelSpacing, et on en prend la moitié
-    this.panelOffset = (N - 1) * this.panelSpacing * 0.1;
-  }
-
-  _computeDepth() {
-    const r = this.sh / this.sw;
-    // map(r, r_min, r_max, depth_max, depth_min, clamp)
-    return p5.prototype.map(r, 0.5, 2.0, 0.6, 0.4, true);
+    this.panelOffset = (this.textures.length - 1) * this.panelSpacing * 0.1;
   }
 
   _resize() {
-    // stocke les nouvelles dimensions
     this.sw = window.innerWidth;
     this.sh = window.innerHeight;
     this.rectW = this.sw * 2.5;
     this.rectH = this.sh * 2.5;
-
-    // 1) (Re)crée tes textures de shadow-only triangles si besoin
+    this.baseScroll = this.rawScroll * (this.sw / 1000);
     this.triangleTextures = this.buildTriangleTextures(this.p5Instance, 0.5);
     this.mergedTri = this.buildMergedTriangle(
       this.p5Instance,
@@ -189,8 +151,6 @@ class CanvasManager {
       this.applyRoundedMask.bind(this, this.p5Instance)
     );
 
-    // 2) Instancie une fois tes Volets
-    //    On stocke seulement la config statique : x,y,angle,swapUV + kind de texture
     const cfgList = [
       {
         texKind: "merged",
@@ -217,14 +177,7 @@ class CanvasManager {
         )
     );
   }
-  buildVoletTexture(p, w, h, borderRadius) {
-    const g = p.createGraphics(w, h);
-    g.clear();
-    g.noStroke();
 
-    g.rect(0, 0, w, h, borderRadius);
-    return g;
-  }
   _updateVoletsConfig() {
     this.VOLETS_CFG = [
       {
@@ -245,98 +198,13 @@ class CanvasManager {
       },
     ];
   }
-  // dessine un plan w×h texturé à la position (x,y,z) et tourné en Y à angleDeg (en degrés)
-  drawWall(p, tex, w, h, x, y, z, angleDeg) {
-    p.push();
-    p.translate(x, y, z);
-    p.rotateY((angleDeg * Math.PI) / 180);
-    p.translate(-w / 2, -h / 2, 0);
-    p.textureMode(p.NORMAL);
-    p.texture(tex);
-    p.beginShape();
-    p.vertex(0, 0, 0, 0);
-    p.vertex(w, 0, 1, 0);
-    p.vertex(w, h, 1, 1);
-    p.vertex(0, h, 0, 1);
-    p.endShape(p.CLOSE);
-    p.pop();
-  }
-  redraw() {
-    this.shouldDraw = true;
-    this.p5Instance.loop();
-  }
 
-  updatePerspective() {
-    const p = this.p5Instance;
-    const perspectiveCSS = window.innerWidth;
-    const fov = 2 * Math.atan(p.height / 2 / perspectiveCSS);
-    this.cam.perspective(fov, p.width / p.height, 0.1, 5000);
-  }
-
-  getScrollDepth() {
-    const scrollDepth =
-      parseFloat(
-        getComputedStyle(document.documentElement).getPropertyValue(
-          "--scroll-depth"
-        )
-      ) || 0;
-    return scrollDepth;
-  }
-
-  getSizeWall() {
-    const sizeWall =
-      parseFloat(
-        getComputedStyle(document.documentElement).getPropertyValue(
-          "--sizeWall"
-        )
-      ) || 600;
-    return sizeWall;
-  }
-
-  // Affiche le triangle texturé avec mapping UV sur une forme rectangle.
-  drawTriangleTexture(p, tex, w, h) {
-    p.noStroke();
-    p.textureMode(p.NORMAL);
-    p.texture(tex);
-    p.beginShape();
-    p.vertex(0, 0, 0, 0);
-    p.vertex(w, 0, 1, 0);
-    p.vertex(w, h, 1, 1);
-    p.vertex(0, h, 0, 1);
-    p.endShape(p.CLOSE);
-  }
-
-  getTriangleTextures(p, depth = 0.5) {
-    // Taille courante du canvas
-    const w = p.width;
-    const h = p.height;
-
-    // Faut‑il régénérer ?
-    const needRebuild =
-      w !== this.lastTexW ||
-      h !== this.lastTexH ||
-      depth !== this.lastDepth ||
-      !this.triangleTextures;
-
-    if (needRebuild) {
-      this.triangleTextures = this.buildTriangleTextures(p, depth);
-      this.lastTexW = w;
-      this.lastTexH = h;
-      this.lastDepth = depth;
-    }
-    return this.triangleTextures;
-  }
-
-  // Création de trois textures de triangle, une pour chaque orientation.
-  // Le paramètre "depth" contrôle le point de départ du dégradé vertical (0.5 ici par exemple)
   buildTriangleTextures(p, depth = 0.5) {
     const w = p.width,
       h = p.height;
     const vf = 0.5,
       apexFactor = 0.5;
     const out = [];
-
-    // configs pour base, côté-droit et côté-gauche
     const configs = [
       [w, h, null],
       [h, w, 0],
@@ -346,17 +214,14 @@ class CanvasManager {
     for (const [W, H, side] of configs) {
       const g = p.createGraphics(W, H, p.P2D);
       const ctx = g.elt.getContext("2d");
-      // ➊ on vide tout
       ctx.clearRect(0, 0, W, H);
 
-      // ➋ fade vertical
       const gradV = ctx.createLinearGradient(0, H * apexFactor, 0, H);
       gradV.addColorStop(depth, "rgba(0,0,0,0)");
       gradV.addColorStop(1, "rgba(0,0,0,0.65)");
       ctx.fillStyle = gradV;
       this.drawTriangleShape(ctx, W, H);
 
-      // ➌ masque horizontal pour les côtés
       if (side !== null) {
         const startX = H * (0.5 + (side === 0 ? -vf : vf));
         const endX = side === 0 ? H : 0;
@@ -372,26 +237,23 @@ class CanvasManager {
       out.push(g);
     }
 
-    return out; // [base, side-right, side-left]
+    return out;
   }
 
   drawTriangleShape(ctx, w, h) {
-    // Facteur de l'apex : ajuste ici pour modifier la hauteur du triangle.
-    const apexFactor = 0.5; // Par défaut, l'apex est à la moitié de la hauteur
+    const apexFactor = 0.5;
     ctx.beginPath();
-    ctx.moveTo(0, h); // coin bas gauche
-    ctx.lineTo(w, h); // coin bas droit
-    ctx.lineTo(w / 2, h * apexFactor); // sommet
+    ctx.moveTo(0, h);
+    ctx.lineTo(w, h);
+    ctx.lineTo(w / 2, h * apexFactor);
     ctx.closePath();
     ctx.fill();
   }
 
-  // Applique un masque de coins arrondis sur une image.
   applyRoundedMask(p, img, relR = 0.023) {
     const w = img.width;
     const h = img.height;
 
-    // rayon = même valeur en pixels sur X et Y  →  coin reste circulaire
     const r = Math.min(w, h) * relR;
 
     const m = p.createGraphics(w, h);
@@ -417,40 +279,34 @@ class CanvasManager {
   buildMergedTriangle(p, tris, maskFn) {
     const w = p.width;
     const h = p.height;
-    // 1️⃣ on crée un buffer 2D
+
     const m = p.createGraphics(w, h, p.P2D);
     m.hide();
     m.clear();
     m.imageMode(p.CENTER);
 
-    // 2️⃣ on y colle les 3 triangles
-    //    – bas
     m.push();
     m.translate(w / 2, h / 2);
     m.image(tris[0], 0, 0);
     m.pop();
-    //    – droite
+
     m.push();
     m.translate(w / 2, h / 2);
     m.rotate(p.HALF_PI);
     m.image(tris[1], 0, 0);
     m.pop();
-    //    – gauche (miroir)
+
     m.push();
     m.translate(w / 2, h / 2);
     m.rotate(-p.HALF_PI);
     m.image(tris[2], 0, 0);
     m.pop();
 
-    // 3️⃣ on transforme p5.Graphics en p5.Image pour le masque
     const mergedImg = m.get();
 
-    // 4️⃣ on applique le mask arrondi (border‐radius)
     return maskFn(mergedImg);
   }
   hover(side, isHovering) {
     console.log("hover");
-    // this.hoveredSide = isHovering ? side : null;
-    // this.redraw();
   }
 }
