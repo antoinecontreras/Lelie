@@ -3,7 +3,6 @@ class Volet {
       this.p   = p;
       this.tex = tex;
       this.cfg = cfg; // { w,h,x,y,z,angle,swapUV,texKind }
-      
     }
     draw() {
       const p = this.p;

@@ -55,10 +55,35 @@ class CanvasManager {
         this.SCROLL_FACTOR = 1;
         this.baseOffset1000 = 73.94;
         this.gapZ = 0.05;
+        this.fovyParams = {
+          minWidth: 1055,
+          maxWidth: 1421,
+          minFovy: 1.055,
+          maxFovy: 1.078,
+        };
+        this.depthParams = {
+          minWidth: 1055,
+          maxWidth: 1421,
+          minDepth: -94.95,
+          maxDepth: 568.4,
+        };
         this._updateSpacing();
         this.scrollRatio = this.panelSpacing / this.sw;
         this.baseScroll = this.rawScroll * (this.sw / 1000);
         this._updateVoletsConfig();
+        this.tunnels = this.textures.map((frameTex, idx) => {
+          return this.VOLETS_CFG.map((cfg) => {
+            // Choix de la texture en fonction de cfg.texKind
+            const tex = cfg.texKind === "merged" ? this.mergedTri : frameTex;
+            return new Volet(p, tex, {
+              ...cfg,
+              w: this.rectW,
+              h: this.rectH,
+              z: 0,
+            });
+          });
+        });
+
         p.windowResized = () => {
           this.sw = window.innerWidth;
           this.sh = window.innerHeight;
@@ -72,6 +97,29 @@ class CanvasManager {
           this.p5Instance.resizeCanvas(window.innerWidth, window.innerHeight);
           this.shouldDraw = true;
           this.p5Instance.loop();
+        };
+        p.mouseClicked = () => {
+          const mx = p.mouseX,
+            my = p.mouseY,
+            sw = this.sw,
+            sh = this.sh,
+            panelW = this.rectW, // largeur (en px) du volet projeté
+            panelH = this.rectH, // hauteur (en px) du volet projeté
+            halfH = sh / 2;
+
+          if (mx > sw - panelW && my > 0 && my < panelH) {
+            console.log("Clic sur le volet DROIT");
+            return;
+          }
+          // volet gauche ?
+          if (
+            mx < panelW &&
+            my > halfH - panelH / 2 &&
+            my < halfH + panelH / 2
+          ) {
+            console.log("Clic sur le volet GAUCHE");
+            return;
+          }
         };
         window.addEventListener(
           "wheel",
@@ -98,84 +146,46 @@ class CanvasManager {
         p.clear();
         p.noStroke();
 
-        const sw = this.sw,
-          sh = this.sh;
        
+        const foxy = this._getFoxy(this.sw);
+        this.cam.perspective(foxy, p.width / p.height, 0.1, 50000);
 
-         
-        const fovy = p.map(sw, 1055, 1421, 1.055, 1.078);
-        this.cam.perspective(fovy, p.width / p.height, 0.1, 50000);
-
-       
-        const offset = p.map(this.rectW, 1055, 1421, -94.95, 568.4);
-        this.scrollDepthPx = offset - this.panelSpacing + this.baseScroll;
-      
-        this.textures.forEach((frameTex, idx) => {
+        this.scrollDepthPx =
+          p.map(
+            this.rectW,
+            this.depthParams.minWidth,
+            this.depthParams.maxWidth,
+            this.depthParams.minDepth,
+            this.depthParams.maxDepth
+          ) -
+          this.panelSpacing +
+          this.baseScroll;
+        this.tunnels.forEach((voletList, idx) => {
           const rev = this.textures.length - 1 - idx;
           const z =
             this.scrollDepthPx - this.panelOffset - rev * this.panelSpacing;
-
-          this.VOLETS_CFG.forEach((cfg) => {
-            const tex = cfg.texKind === "merged" ? this.mergedTri : frameTex;
-            new Volet(p, tex, {
-              w: this.rectW,
-              h: this.rectH,
-              x: cfg.x,
-              y: cfg.y,
-              z,
-              angle: cfg.angle,
-              swapUV: cfg.swapUV,
-            }).draw();
-          });
+          for (let volet of voletList) {
+            volet.cfg.z = z; // mettre à jour la profondeur spécifique
+            volet.draw(); // et dessiner
+          }
         });
+
         this.shouldDraw = false;
       };
     });
   }
-
+  _getFoxy(sw) {
+    return this.p5Instance.map(
+      sw,
+      this.fovyParams.minWidth,
+      this.fovyParams.maxWidth,
+      this.fovyParams.minFovy,
+      this.fovyParams.maxFovy
+    );
+  }
   _updateSpacing() {
     this.panelSpacing = this.rectW + this.gapZ * this.sw;
     this.panelOffset = (this.textures.length - 1) * this.panelSpacing * 0.1;
-  }
-
-  _resize() {
-    this.sw = window.innerWidth;
-    this.sh = window.innerHeight;
-    this.rectW = this.sw * 2.5;
-    this.rectH = this.sh * 2.5;
-    this.baseScroll = this.rawScroll * (this.sw / 1000);
-    this.triangleTextures = this.buildTriangleTextures(this.p5Instance, 0.5);
-    this.mergedTri = this.buildMergedTriangle(
-      this.p5Instance,
-      this.triangleTextures,
-      this.applyRoundedMask.bind(this, this.p5Instance)
-    );
-
-    const cfgList = [
-      {
-        texKind: "merged",
-        x: this.rectW / 2,
-        y: this.rectH / 2,
-        angle: 0,
-        swapUV: false,
-      },
-      {
-        texKind: "frame",
-        x: this.rectW,
-        y: this.rectH / 2,
-        angle: -90,
-        swapUV: false,
-      },
-      { texKind: "frame", x: 0, y: this.rectH / 2, angle: 90, swapUV: false },
-    ];
-    this.volets = cfgList.map(
-      (cfg) =>
-        new Volet(
-          this.p5Instance,
-          /* tex */ null,
-          /* cfg */ { ...cfg, w: this.rectW, h: this.rectH, z: 0 }
-        )
-    );
   }
 
   _updateVoletsConfig() {
@@ -305,8 +315,5 @@ class CanvasManager {
     const mergedImg = m.get();
 
     return maskFn(mergedImg);
-  }
-  hover(side, isHovering) {
-    console.log("hover");
   }
 }
