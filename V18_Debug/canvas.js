@@ -32,7 +32,7 @@ class CanvasManager {
           window.innerHeight,
           p.WEBGL
         );
-        
+
         styleDatas.forEach((styleData) => {
           this.canvas.style(styleData[0], styleData[1]);
         });
@@ -66,16 +66,20 @@ class CanvasManager {
 
         this._updateVoletsConfig();
         this.tunnels = this.textures.map((frameTex, idx) => {
-          return this.VOLETS_CFG.map((cfg) => {
-            const tex = cfg.texKind === "merged" ? this.mergedTri : frameTex;
-            return new Volet(p, tex, {
-              ...cfg,
-              w: this.sw,
-              h: this.sh,
-              z: 0,
-            });
-          });
+          return {
+            isOpen: false,
+            el: this.VOLETS_CFG.map((cfg) => {
+              const tex = cfg.texKind === "merged" ? this.mergedTri : frameTex;
+              return new Volet(p, tex, {
+                ...cfg,
+                w: this.sw,
+                h: this.sh,
+                z: 0,
+              });
+            }),
+          };
         });
+        console.log(this.tunnels);
         p.draw = () => {
           if (!this.s.draw) return;
           p.clear();
@@ -134,22 +138,44 @@ class CanvasManager {
               this.s.current = clamped;
               this.s.visualIndex = this.textures.length - 1 - clamped;
 
-              this.tunnels.forEach((liste, idx) => {
-                liste.forEach((volet) => {
-                  if (
-                    idx === this.s.visualIndex &&
-                    volet.cfg.texKind === "frame"
-                  ) {
-                      // volet.style.opacity = 205;
-                    volet.open(
-                      volet.cfg.angle < 0 ? -this.s.delta : +this.s.delta
-                    );
-                  } else if(  volet.cfg.texKind === "frame") {
-                    // volet.style.opacity = 105;
-                    volet.close();
-                  }
+              // this.tunnels.forEach((volets, idx) => {
+              //   console.log(volets);
+              //   volets.el.forEach((volet) => {
+              //     if (
+              //       idx === this.s.visualIndex &&
+              //       volet.cfg.texKind === "frame"
+              //     ) {
+              //       // volet.style.opacity = 205;
+              //       volet.open(
+              //         volet.cfg.angle < 0 ? -this.s.delta : +this.s.delta
+              //       );
+              //     } else if (volet.cfg.texKind === "frame") {
+              //       // volet.style.opacity = 105;
+              //       volet.close();
+              //     }
+              //   });
+              // });
+                // Close previously open tunnels
+                this.tunnels
+                .filter(tunnel => tunnel.isOpen)
+                .forEach(tunnel => {
+                  tunnel.isOpen = false;
+                  tunnel.el
+                  .filter(volet => volet.cfg.texKind === "frame")
+                  .forEach(volet => volet.close());
                 });
-              });
+
+                // Open current tunnel
+                const currentTunnel = this.tunnels[this.s.visualIndex];
+                currentTunnel.isOpen = true;
+                currentTunnel.el
+                .filter(volet => volet.cfg.texKind === "frame") 
+                .forEach(volet => {
+                  volet.style.opacity = 205;
+                  volet.open(volet.cfg.angle < 0 ? -this.s.delta : +this.s.delta);
+                });
+
+              // const closeTunnel = this.tunnels.filter(tunnel => tunnel )
             }
             // console.log(clamped);
 
@@ -167,7 +193,8 @@ class CanvasManager {
     });
   }
   _animation() {
-    this.tunnels[this.s.visualIndex].forEach((volet) => {
+    console.log(this.tunnels);
+    this.tunnels[this.s.visualIndex].el.forEach((volet) => {
       if (volet.cfg.texKind === "frame") {
         volet.style.opacity = 245;
         volet.draw();
@@ -180,7 +207,7 @@ class CanvasManager {
       const rev = this.textures.length - 1 - idx;
 
       const z = this.s.base - rev * this.sw;
-      voletList.forEach((volet) => {
+      voletList.el.forEach((volet) => {
         volet.cfg.z = z;
         volet.draw();
       });

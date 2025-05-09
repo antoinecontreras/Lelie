@@ -24,7 +24,7 @@ class Volet {
   fade(state) {
     if (state == "open") {
       if (this.cfg.texKind === "frame") {
-        this.style.opacity = 255;
+        this.style.opacity = 205;
       }
     }else if((state == "close")){
        if (this.cfg.texKind === "frame") {
