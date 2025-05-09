@@ -5,12 +5,12 @@ class CanvasManager {
       p.preload = () => {
         this.textures.push(p.loadImage("../IMG/frame_05.jpg"));
         this.textures.push(p.loadImage("../IMG/frame_06.jpg"));
-        this.textures.push(p.loadImage("../IMG/p_a.jpg"));
-        this.textures.push(p.loadImage("../IMG/p_b.jpg"));
-        this.textures.push(p.loadImage("../IMG/frame_06.jpg"));
-        this.textures.push(p.loadImage("../IMG/frame_05.jpg"));
-        this.textures.push(p.loadImage("../IMG/p_b.jpg"));
-        this.textures.push(p.loadImage("../IMG/p_a.jpg"));
+        // this.textures.push(p.loadImage("../IMG/p_a.jpg"));
+        // this.textures.push(p.loadImage("../IMG/p_b.jpg"));
+        // this.textures.push(p.loadImage("../IMG/frame_06.jpg"));
+        // this.textures.push(p.loadImage("../IMG/frame_05.jpg"));
+        // this.textures.push(p.loadImage("../IMG/p_b.jpg"));
+        // this.textures.push(p.loadImage("../IMG/p_a.jpg"));
       };
       p.setup = () => {
         this.canvas = p.createCanvas(
@@ -49,8 +49,12 @@ class CanvasManager {
         this.lastDepth = 0.5;
         this.sw = window.innerWidth;
         this.sh = window.innerHeight;
-        this.rectW = 2.5 * this.sw;
-        this.rectH = 2.5 * this.sh;
+  
+        // this.rectW = 2.5 * this.sw;
+        // this.rectH = 2.5 * this.sh;
+        this.rectW = 1 * this.sw;
+        this.rectH = 1 * this.sh;
+
         this.rawScroll = 0;
         this.SCROLL_FACTOR = 1;
         this.baseOffset1000 = 73.94;
@@ -67,14 +71,12 @@ class CanvasManager {
           minDepth: -94.95,
           maxDepth: 568.4,
         };
-        this.basePanel = 1; // largeur d’un panneau dans l’espace de référence
-        this.baseSpacing = 1; // espacement unitaire entre panneaux
-        this.baseOffset = ((this.textures.length - 1) * this.baseSpacing) / 2;
-        // this._updateSpacing();
-        const BASE_SPACING = 2000;
-        this.panelSpacing = BASE_SPACING;
-        this.panelOffset = (this.textures.length - 1) * BASE_SPACING;
-        this.scrollRatio = this.panelSpacing / this.sw;
+
+
+        this.panelSpacing = this.rectW; // ou W réel de ton panneau
+        this.panelOffset = ((this.textures.length - 1) * this.panelSpacing) ;
+        
+       
         this.baseScroll = this.rawScroll * (this.sw / 1000);
         this._updateVoletsConfig();
         this.tunnels = this.textures.map((frameTex, idx) => {
@@ -93,31 +95,24 @@ class CanvasManager {
           if (!this.shouldDraw) return;
           p.clear();
           p.noStroke();
-  
-          const foxy = this._getFoxy(this.sw);
+
+          // const foxy = this._getFoxy(this.sw);
+          const foxy = p.radians(74);
+          console.log(foxy);
           this.cam.perspective(foxy, p.width / p.height, 0.1, 50000);
-  
-          // this.scrollDepthPx =
-          //   p.map(
-          //     this.rectW,
-          //     this.depthParams.minWidth,
-          //     this.depthParams.maxWidth,
-          //     this.depthParams.minDepth,
-          //     this.depthParams.maxDepth
-          //   ) -
-          //   this.panelSpacing +
-          //   this.baseScroll;
+
+        
           this.scrollDepthPx = this.baseScroll;
           const N = this.textures.length; // <— bien déclarer N
           this.panelOffset = (N - 1) * this.panelSpacing; // on décale pour que le dernier arrive à z = 0
-  
+
           this.tunnels.forEach((voletList, idx) => {
             const rev = N - 1 - idx; // inversion pour la transparence
             const z =
               this.scrollDepthPx +
               this.panelOffset - // on part de derrière
               rev * this.panelSpacing; // on remonte rev × espacement
-  
+
             voletList.forEach((volet) => {
               volet.cfg.z = z;
               volet.draw();
@@ -126,65 +121,9 @@ class CanvasManager {
           this.shouldDraw = false;
         };
         p.windowResized = () => {
-          // this.sw = window.innerWidth;
-          // this.sh = window.innerHeight;
-          // this.rectW = 2.5 * this.sw;
-          // this.rectH = 2.5 * this.sh;
-          // this.lastTexW = this.lastTexH = 0;
-          // this._updateSpacing();
-          // this.scrollRatio = this.panelSpacing / this.sw;
-          // this._updateVoletsConfig();
-          // this.p5Instance.resizeCanvas(window.innerWidth, window.innerHeight);
-          // this.shouldDraw = true;
-          // this.p5Instance.loop();
-          // const foxy = this._getFoxy(this.sw);
-          // this.cam.perspective(foxy, p.width / p.height, 0.1, 50000);
-          // this.scrollDepthPx =
-          //   p.map(
-          //     this.rectW,
-          //     this.depthParams.minWidth,
-          //     this.depthParams.maxWidth,
-          //     this.depthParams.minDepth,
-          //     this.depthParams.maxDepth
-          //   ) -
-          //   this.panelSpacing +
-          //   this.baseScroll;
-          // this.tunnels.forEach((voletList, idx) => {
-          //   const rev = this.textures.length - 1 - idx;
-          //   const z =
-          //     this.scrollDepthPx - this.panelOffset - rev * this.panelSpacing;
-          //   for (let volet of voletList) {
-          //     volet.cfg.z = z; // mettre à jour la profondeur spécifique
-          //     volet.draw(); // et dessiner
-          //   }
-          // });
-          // console.log(foxy);
+       
         };
-        p.mouseClicked = () => {
-          const w = p.width,
-            h = p.height,
-            cx = w / 2,
-            cy = h / 2,
-            mx = p.mouseX,
-            my = p.mouseY;
 
-          // défini tes deux triangles
-          const triG = [
-            { x: 0, y: 0 },
-            { x: cx, y: cy },
-            { x: 0, y: h },
-          ];
-          const triD = [
-            { x: w, y: 0 },
-            { x: cx, y: cy },
-            { x: w, y: h },
-          ];
-          if (this.pointInPolygon(mx, my, triG)) {
-            console.log("gauche");
-          } else if (this.pointInPolygon(mx, my, triD)) {
-            console.log("droit");
-          }
-        };
         window.addEventListener(
           "wheel",
           (e) => {
@@ -204,8 +143,6 @@ class CanvasManager {
           { passive: false }
         );
       };
-
-
     });
   }
   pointInPolygon(x, y, poly) {
@@ -230,15 +167,7 @@ class CanvasManager {
       this.fovyParams.maxFovy
     );
   }
-  _updateSpacing() {
-    // this.panelSpacing = this.rectW + this.gapZ * this.sw;
-    // this.panelOffset = (this.textures.length - 1) * this.panelSpacing * 0.1;
-    // this.panelSpacing = this.rectW; // ou W réel de ton panneau
-    // this.panelOffset = ((this.textures.length - 1) * this.panelSpacing) / 2;
-    const BASE_SPACING = 1000;
-    this.panelSpacing = BASE_SPACING;
-    this.panelOffset = (this.textures.length - 1) * BASE_SPACING;
-  }
+
 
   _updateVoletsConfig() {
     this.VOLETS_CFG = [

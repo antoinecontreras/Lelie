@@ -6,11 +6,11 @@ class CanvasManager {
         this.textures.push(p.loadImage("../IMG/frame_05.jpg"));
         this.textures.push(p.loadImage("../IMG/frame_06.jpg"));
         this.textures.push(p.loadImage("../IMG/p_a.jpg"));
-        this.textures.push(p.loadImage("../IMG/p_b.jpg"));
-        this.textures.push(p.loadImage("../IMG/frame_06.jpg"));
-        this.textures.push(p.loadImage("../IMG/frame_05.jpg"));
-        this.textures.push(p.loadImage("../IMG/p_b.jpg"));
-        this.textures.push(p.loadImage("../IMG/p_a.jpg"));
+        // this.textures.push(p.loadImage("../IMG/p_b.jpg"));
+        // this.textures.push(p.loadImage("../IMG/frame_06.jpg"));
+        // this.textures.push(p.loadImage("../IMG/frame_05.jpg"));
+        // this.textures.push(p.loadImage("../IMG/p_b.jpg"));
+        // this.textures.push(p.loadImage("../IMG/p_a.jpg"));
       };
       p.setup = () => {
         this.canvas = p.createCanvas(
@@ -35,7 +35,6 @@ class CanvasManager {
 
         p.clear();
         p.noLoop();
-        this.cam = p.createCamera();
 
         this.triangleTextures = this.buildTriangleTextures(p, 0.5);
         this.mergedTri = this.buildMergedTriangle(
@@ -49,8 +48,7 @@ class CanvasManager {
         this.lastDepth = 0.5;
         this.sw = window.innerWidth;
         this.sh = window.innerHeight;
-        this.rectW = 2.5 * this.sw;
-        this.rectH = 2.5 * this.sh;
+
         this.rawScroll = 0;
         this.SCROLL_FACTOR = 1;
         this.baseOffset1000 = 73.94;
@@ -67,14 +65,13 @@ class CanvasManager {
           minDepth: -94.95,
           maxDepth: 568.4,
         };
-        this.basePanel = 1; // largeur d’un panneau dans l’espace de référence
-        this.baseSpacing = 1; // espacement unitaire entre panneaux
-        this.baseOffset = ((this.textures.length - 1) * this.baseSpacing) / 2;
-        // this._updateSpacing();
-        const BASE_SPACING = 2000;
-        this.panelSpacing = BASE_SPACING;
-        this.panelOffset = (this.textures.length - 1) * BASE_SPACING;
-        this.scrollRatio = this.panelSpacing / this.sw;
+        this.c = {
+          foxy: p.radians(74),
+          cam: p.createCamera(),
+        };
+        this.c.cam.perspective(this.c.foxy, p.width / p.height, 0.1, 50000);
+        this.panelOffset = (this.textures.length - 1) * this.sw;
+
         this.baseScroll = this.rawScroll * (this.sw / 1000);
         this._updateVoletsConfig();
         this.tunnels = this.textures.map((frameTex, idx) => {
@@ -83,8 +80,8 @@ class CanvasManager {
             const tex = cfg.texKind === "merged" ? this.mergedTri : frameTex;
             return new Volet(p, tex, {
               ...cfg,
-              w: this.rectW,
-              h: this.rectH,
+              w: this.sw,
+              h: this.sh,
               z: 0,
             });
           });
@@ -93,72 +90,11 @@ class CanvasManager {
           if (!this.shouldDraw) return;
           p.clear();
           p.noStroke();
-  
-          const foxy = this._getFoxy(this.sw);
-          this.cam.perspective(foxy, p.width / p.height, 0.1, 50000);
-  
-          // this.scrollDepthPx =
-          //   p.map(
-          //     this.rectW,
-          //     this.depthParams.minWidth,
-          //     this.depthParams.maxWidth,
-          //     this.depthParams.minDepth,
-          //     this.depthParams.maxDepth
-          //   ) -
-          //   this.panelSpacing +
-          //   this.baseScroll;
+
           this.scrollDepthPx = this.baseScroll;
-          const N = this.textures.length; // <— bien déclarer N
-          this.panelOffset = (N - 1) * this.panelSpacing; // on décale pour que le dernier arrive à z = 0
-  
-          this.tunnels.forEach((voletList, idx) => {
-            const rev = N - 1 - idx; // inversion pour la transparence
-            const z =
-              this.scrollDepthPx +
-              this.panelOffset - // on part de derrière
-              rev * this.panelSpacing; // on remonte rev × espacement
-  
-            voletList.forEach((volet) => {
-              volet.cfg.z = z;
-              volet.draw();
-            });
-          });
+
+          this.drawTunnel();
           this.shouldDraw = false;
-        };
-        p.windowResized = () => {
-          // this.sw = window.innerWidth;
-          // this.sh = window.innerHeight;
-          // this.rectW = 2.5 * this.sw;
-          // this.rectH = 2.5 * this.sh;
-          // this.lastTexW = this.lastTexH = 0;
-          // this._updateSpacing();
-          // this.scrollRatio = this.panelSpacing / this.sw;
-          // this._updateVoletsConfig();
-          // this.p5Instance.resizeCanvas(window.innerWidth, window.innerHeight);
-          // this.shouldDraw = true;
-          // this.p5Instance.loop();
-          // const foxy = this._getFoxy(this.sw);
-          // this.cam.perspective(foxy, p.width / p.height, 0.1, 50000);
-          // this.scrollDepthPx =
-          //   p.map(
-          //     this.rectW,
-          //     this.depthParams.minWidth,
-          //     this.depthParams.maxWidth,
-          //     this.depthParams.minDepth,
-          //     this.depthParams.maxDepth
-          //   ) -
-          //   this.panelSpacing +
-          //   this.baseScroll;
-          // this.tunnels.forEach((voletList, idx) => {
-          //   const rev = this.textures.length - 1 - idx;
-          //   const z =
-          //     this.scrollDepthPx - this.panelOffset - rev * this.panelSpacing;
-          //   for (let volet of voletList) {
-          //     volet.cfg.z = z; // mettre à jour la profondeur spécifique
-          //     volet.draw(); // et dessiner
-          //   }
-          // });
-          // console.log(foxy);
         };
         p.mouseClicked = () => {
           const w = p.width,
@@ -185,27 +121,41 @@ class CanvasManager {
             console.log("droit");
           }
         };
+        p.windowResized = () => {
+          p.resizeCanvas(window.innerWidth, window.innerHeight);
+          this.drawTunnel();
+        };
+
         window.addEventListener(
           "wheel",
           (e) => {
             e.preventDefault();
             const newRawScroll = this.rawScroll + e.deltaY;
-            const newBaseScroll = newRawScroll * (this.sw / 1000);
-            if (newBaseScroll > -4000) {
+            const newBaseScroll = newRawScroll * (this.sw / 3000);
+            if (newBaseScroll > 0) {
               this.rawScroll = newRawScroll;
               this.baseScroll = newBaseScroll;
               this.shouldDraw = true;
-              this.p5Instance.loop();
             } else {
-              // this.rawScroll = 0;
-              // this.baseScroll = 0;
+              this.rawScroll = 0;
+              this.baseScroll = 0;
             }
+            this.p5Instance.loop();
           },
           { passive: false }
         );
       };
+    });
+  }
+  drawTunnel() {
+    this.tunnels.forEach((voletList, idx) => {
+      const rev = this.textures.length - 1 - idx;
 
-
+      const z = this.scrollDepthPx - rev * this.sw;
+      voletList.forEach((volet) => {
+        volet.cfg.z = z;
+        volet.draw();
+      });
     });
   }
   pointInPolygon(x, y, poly) {
@@ -230,31 +180,22 @@ class CanvasManager {
       this.fovyParams.maxFovy
     );
   }
-  _updateSpacing() {
-    // this.panelSpacing = this.rectW + this.gapZ * this.sw;
-    // this.panelOffset = (this.textures.length - 1) * this.panelSpacing * 0.1;
-    // this.panelSpacing = this.rectW; // ou W réel de ton panneau
-    // this.panelOffset = ((this.textures.length - 1) * this.panelSpacing) / 2;
-    const BASE_SPACING = 1000;
-    this.panelSpacing = BASE_SPACING;
-    this.panelOffset = (this.textures.length - 1) * BASE_SPACING;
-  }
 
   _updateVoletsConfig() {
     this.VOLETS_CFG = [
       {
         texKind: "frame",
-        x: this.rectW,
+        x: this.sw,
         y: 0,
         angle: -90,
         swapUV: false,
       },
-      { texKind: "frame", x: 0, y: this.rectH / 2, angle: 90, swapUV: false },
+      { texKind: "frame", x: 0, y: this.sh / 2, angle: 90, swapUV: false },
 
       {
         texKind: "merged",
-        x: this.rectW / 2,
-        y: this.rectH / 2,
+        x: this.sw / 2,
+        y: this.sh / 2,
         angle: 0,
         swapUV: false,
       },
