@@ -62,6 +62,7 @@ class CanvasManager {
 
         this.sw = window.innerWidth;
         this.sh = window.innerHeight;
+        // this.sh = 1204;
 
         this.s.isAnimating = false;
         this.s.base = this.s.raw * (this.sw / 3000);
@@ -128,21 +129,21 @@ class CanvasManager {
   setupMouseMove(p) {
     p.mouseMoved = () => {
       const w = p.width,
-        h = p.height,
-        cx = w / 2,
-        cy = h / 2,
-        mx = p.mouseX,
-        my = p.mouseY,
-        triG = [
-          { x: 0, y: 0 },
-          { x: cx, y: cy },
-          { x: 0, y: h },
-        ],
-        triD = [
-          { x: w, y: 0 },
-          { x: cx, y: cy },
-          { x: w, y: h },
-        ];
+      h = p.height,
+      cx = w / 2,
+      cy = h / 2,
+      mx = p.mouseX,
+      my = p.mouseY,
+      triG = [
+        { x: 0, y: 0 },
+        { x: cx, y: cy },
+        { x: 0, y: h },
+      ],
+      triD = [
+        { x: w, y: 0 },
+        { x: cx, y: cy },
+        { x: w, y: h },
+      ];
 
       const isLeft = this.pointInPolygon(mx, my, triG);
       const isRight = this.pointInPolygon(mx, my, triD);
@@ -150,19 +151,23 @@ class CanvasManager {
 
       // 1) Si on change de zone, on ferme l'ancien
       if (newSide !== this.s.currentSide) {
+      if (this.s.prevHoverTunnel) {
         this._closeTunnel(this.s.prevHoverTunnel);
         this.s.prevHoverTunnel = null;
+        this.s.draw = true; // Only set draw=true if we actually close something
+      }
       }
 
       // 2) Si on sort complètement, on réinitialise et on s'arrête
       if (newSide === null) {
-        this.s.currentSide = null;
-        return;
+      console.log("out");
+      this.s.currentSide = null;
+      return;
       }
 
       // 3) Si on reste dans la même zone, on ne fait rien
       if (newSide === this.s.currentSide) {
-        return;
+      return;
       }
 
       // 4) Sinon on ouvre le nouveau volet (gauche ou droite)
@@ -170,7 +175,6 @@ class CanvasManager {
       let raw = this.tunnels[this.s.visualIndex][idx];
       const frames = Array.isArray(raw) ? raw : [raw];
       this._openTunnel(frames);
-      console.log(this.s.visualIndex);
 
       // 5) Mémoire + redraw
       this.s.prevHoverTunnel = frames;
@@ -193,8 +197,6 @@ class CanvasManager {
         // Calcul du nouvel index et clamp
         const step = Math.floor(this.s.base / this.sw);
         const clamped = Math.max(0, Math.min(this.textures.length - 1, step));
-
-        
 
         if (clamped !== this.s.current) {
           // Fermeture du tunnel précédent
@@ -296,13 +298,17 @@ class CanvasManager {
     );
   }
   _initCamera(p) {
+
     const c = {
-      foxy: p.radians(74),
+      // foxy: p.radians(p.height / 16.27),
+      foxy: p.radians(p.height / 16.27),
       cam: p.createCamera(),
     };
+    // c.cam.perspective(c.foxy, p.width / p.height, 0.1, 50000);
     c.cam.perspective(c.foxy, p.width / p.height, 0.1, 50000);
     return c;
   }
+
   _updateVoletsConfig() {
     this.VOLETS_CFG = [
       { texKind: "frame", x: 0, y: this.sh / 2, angle: 90, swapUV: false },
