@@ -11,13 +11,16 @@ class CanvasManager {
         delta: -4,
         visualIndex: 0,
         isAnimating: false,
+        currentSide: null,
+        prevHoverTunnel: null,
+        prevOpenTunnel: null,
       };
       const styleDatas = [
         ["pointer-events", "none"],
         ["image-rendering", "pixelated"],
         ["z-index", "0"],
       ];
-      this.prevOpenTunnel = null;
+      this.s.prevOpenTunnel = null;
       p.preload = () => {
         this.textures.push(p.loadImage("../IMG/frame_05.jpg"));
         this.textures.push(p.loadImage("../IMG/frame_06.jpg"));
@@ -79,165 +82,178 @@ class CanvasManager {
             });
           });
         });
-        p.draw = () => {
-          if (!this.s.draw) return;
-          // console.log("object");
-          p.clear();
-          p.noStroke();
-          // console.log("general : " + p.frameCount);
-          this.drawTunnel();
-          if (this._animationsRunning()) {
-            // console.log("object");
-            // continue à loop tant qu’il y a encore des interpolations en cours
-            this.p5Instance.loop();
-          } else {
-            // une fois l’animation complètement terminée :
-            this.prevOpenTunnel = this.currentTunnel;
-            this.s.draw = false;
-            this.s.isAnimating = false;
-          }
-        };
-        // p.mouseClicked = () => {
-        //   const w = p.width,
-        //     h = p.height,
-        //     cx = w / 2,
-        //     cy = h / 2,
-        //     mx = p.mouseX,
-        //     my = p.mouseY;
+      };
+      this.setupMouseMove(p);
+      this.setupWheel(p);
 
-        //   // défini tes deux triangles
-        //   const triG = [
-        //     { x: 0, y: 0 },
-        //     { x: cx, y: cy },
-        //     { x: 0, y: h },
-        //   ];
-        //   const triD = [
-        //     { x: w, y: 0 },
-        //     { x: cx, y: cy },
-        //     { x: w, y: h },
-        //   ];
+      p.draw = this._draw.bind(this, p);
 
-        //   if (this.pointInPolygon(mx, my, triG)) {
-        //     const currentTunnel = this.tunnels[this.s.visualIndex][0];
-        //     currentTunnel.style.opacity = 255;
-        //     currentTunnel.draw();
-        //   } else if (this.pointInPolygon(mx, my, triD)) {
-        //     const currentTunnel = this.tunnels[this.s.visualIndex][1];
-        //     currentTunnel.style.opacity = 255;
-        //     currentTunnel.draw();
-        //   }
-        // };
-        p.mouseMoved = () => {
-          const w = p.width,
-            h = p.height,
-            cx = w / 2,
-            cy = h / 2,
-            mx = p.mouseX,
-            my = p.mouseY,
-            triG = [
-              { x: 0, y: 0 },
-              { x: cx, y: cy },
-              { x: 0, y: h },
-            ],
-            triD = [
-              { x: w, y: 0 },
-              { x: cx, y: cy },
-              { x: w, y: h },
-            ];
+      // …puis dans setup() ou là où tu ajoutes l’évènement wheel :
 
-          const isLeft = this.pointInPolygon(mx, my, triG);
-          const isRight = this.pointInPolygon(mx, my, triD);
-          const newSide = isLeft ? "left" : isRight ? "right" : null;
-
-          // 1) Si on passe d’une zone à une autre (ou hors zone) => fermer l’ancien
-          if (newSide !== this.s.currentSide && this.prevHoverTunnel) {
-            this.prevHoverTunnel
-              .filter((v) => v.cfg.texKind === "frame")
-              .forEach((v) => v.close());
-            this.prevHoverTunnel = null;
-          }
-
-          // 2) Si on est sorti des deux zones, on met à jour currentSide et on s’arrête
-          if (newSide === null) {
-            this.s.currentSide = null;
-            return;
-          }
-
-          // 3) Si on entre dans la même zone qu’avant, on ne fait rien
-          if (newSide === this.s.currentSide) {
-            return;
-          }
-
-          // 4) Sinon : nouveau côté → on ouvre le tunnel correspondant
-          const idx = newSide === "left" ? 0 : 1;
-          const raw = this.tunnels[this.s.visualIndex][idx];
-          const frames = Array.isArray(raw) ? raw : [raw];
-
-          frames
-            .filter((v) => v.cfg.texKind === "frame")
-            .forEach((v) => {
-              // sens “normal” (pas de rewin ici)
-              const delta = v.cfg.angle < 0 ? -this.s.delta : +this.s.delta;
-              v.open(delta);
-              
-            });
-
-          // 5) On mémorise et on demande un redraw
-          this.prevHoverTunnel = frames;
-          this.s.currentSide = newSide;
-          this.s.draw = true;
-          this.p5Instance.loop();
-        };
-
-        // …puis dans setup() ou là où tu ajoutes l’évènement wheel :
-        window.addEventListener(
-          "wheel",
-          (e) => {
-            e.preventDefault();
-            this.s.raw = Math.max(0, this.s.raw + e.deltaY);
-            this.s.base = this.s.raw * this.s.scale;
-            this.s.draw = true;
-
-            const step = Math.floor(this.s.base / this.sw);
-            const clamped = Math.max(
-              0,
-              Math.min(this.textures.length - 1, step)
-            );
-            if (clamped !== this.s.current) {
-              this.s.current = clamped;
-              this.s.visualIndex = this.textures.length - 1 - clamped;
-
-              // fermer l’ancien tunnel
-              if (this.prevOpenTunnel) {
-                this.prevOpenTunnel
-                  .filter((v) => v.cfg.texKind === "frame")
-                  .forEach((v) => v.close());
-              }
-
-              // ouvrir le tunnel courant
-               console.log( this.prevHoverTunnel.filter((v) => v.cfg.texKind === "frame"));
-              this.currentTunnel = this.tunnels[this.s.visualIndex];
-              this.currentTunnel
-                .filter((v) => v.cfg.texKind === "frame")
-                .forEach((v) => {
-                  v.style.opacity = 205;
-                  // v.open(v.cfg.angle < 0 ? -this.s.delta : +this.s.delta);
-                  // console.log( this.prevHoverTunnel);
-                });
-            }
-
-            this.p5Instance.loop();
-          },
-          { passive: false }
-        );
-        p.windowResized = () => {
-          p.resizeCanvas(window.innerWidth, window.innerHeight);
-          this.s.scale = this.sw / 3000;
-          this.drawTunnel();
-        };
+      p.windowResized = () => {
+        p.resizeCanvas(window.innerWidth, window.innerHeight);
+        this.s.scale = this.sw / 3000;
+        this.drawTunnel();
       };
     });
   }
+  _draw(p) {
+    if (!this.s.draw) return;
+    p.clear();
+    p.noStroke();
+    this.drawTunnel();
+    if (this._animationsRunning()) {
+      this.p5Instance.loop();
+    } else {
+      this.s.prevOpenTunnel = this.currentTunnel;
+      this.s.draw = false;
+      this.s.isAnimating = false;
+    }
+  }
+  // ferme un tableau de Volets “frame”
+  _closeTunnel(frames) {
+    if (!frames) return;
+    frames.filter((v) => v.cfg.texKind === "frame").forEach((v) => v.close());
+  }
+
+  // ouvre un tableau de Volets “frame” à l’angle normal
+  _openTunnel(frames) {
+    frames
+      .filter((v) => v.cfg.texKind === "frame")
+      .forEach((v) => {
+        const delta = v.cfg.angle < 0 ? -this.s.delta : +this.s.delta;
+        v.open(delta);
+      });
+  }
+  setupMouseMove(p) {
+    p.mouseMoved = () => {
+      const w = p.width,
+        h = p.height,
+        cx = w / 2,
+        cy = h / 2,
+        mx = p.mouseX,
+        my = p.mouseY,
+        triG = [
+          { x: 0, y: 0 },
+          { x: cx, y: cy },
+          { x: 0, y: h },
+        ],
+        triD = [
+          { x: w, y: 0 },
+          { x: cx, y: cy },
+          { x: w, y: h },
+        ];
+
+      const isLeft = this.pointInPolygon(mx, my, triG);
+      const isRight = this.pointInPolygon(mx, my, triD);
+      const newSide = isLeft ? "left" : isRight ? "right" : null;
+
+      // 1) Si on change de zone, on ferme l'ancien
+      if (newSide !== this.s.currentSide) {
+        this._closeTunnel(this.s.prevHoverTunnel);
+        this.s.prevHoverTunnel = null;
+      }
+
+      // 2) Si on sort complètement, on réinitialise et on s'arrête
+      if (newSide === null) {
+        this.s.currentSide = null;
+        return;
+      }
+
+      // 3) Si on reste dans la même zone, on ne fait rien
+      if (newSide === this.s.currentSide) {
+        return;
+      }
+
+      // 4) Sinon on ouvre le nouveau volet (gauche ou droite)
+      const idx = newSide === "left" ? 0 : 1;
+      let raw = this.tunnels[this.s.visualIndex][idx];
+      const frames = Array.isArray(raw) ? raw : [raw];
+      this._openTunnel(frames);
+      console.log(this.s.visualIndex);
+
+      // 5) Mémoire + redraw
+      this.s.prevHoverTunnel = frames;
+      this.s.currentSide = newSide;
+      this.s.draw = true;
+      this.p5Instance.loop();
+    };
+  }
+  setupWheel(p) {
+    window.addEventListener(
+      "wheel",
+      (e) => {
+        e.preventDefault();
+
+        // Mise à jour du raw, base et draw
+        this.s.raw = Math.max(0, this.s.raw + e.deltaY);
+        this.s.base = this.s.raw * this.s.scale;
+        this.s.draw = true;
+
+        // Calcul du nouvel index et clamp
+        const step = Math.floor(this.s.base / this.sw);
+        const clamped = Math.max(0, Math.min(this.textures.length - 1, step));
+
+        
+
+        if (clamped !== this.s.current) {
+          // Fermeture du tunnel précédent
+          this._closeTunnel(this.s.prevHoverTunnel);
+          this.s.prevHoverTunnel = null;
+          this.s.currentSide = null;
+
+          // Fermeture du tunnel ouvert par scroll précédent
+          this._closeTunnel(this.s.prevOpenTunnel);
+
+          // Mise à jour des indices
+          this.s.current = clamped;
+          this.s.visualIndex = this.textures.length - 1 - clamped;
+
+          console.log("After update: ", this.s.visualIndex); // Affiche la nouvelle valeur de visualIndex
+
+          // Ouverture du nouveau tunnel
+          this.currentTunnel = this.tunnels[this.s.visualIndex];
+          const frames = this.currentTunnel.filter(
+            (v) => v.cfg.texKind === "frame"
+          );
+          frames.forEach((v) => (v.style.opacity = 205));
+
+          this.s.prevOpenTunnel = frames;
+        }
+
+        this.p5Instance.loop();
+      },
+      { passive: false }
+    );
+  }
+  _computeSide(p) {
+    const w = p.width,
+      h = p.height,
+      cx = w / 2,
+      cy = h / 2;
+    const mx = p.mouseX,
+      my = p.mouseY;
+    const triG = [
+      { x: 0, y: 0 },
+      { x: cx, y: cy },
+      { x: 0, y: h },
+    ];
+    const triD = [
+      { x: w, y: 0 },
+      { x: cx, y: cy },
+      { x: w, y: h },
+    ];
+    const isLeft = this.pointInPolygon(mx, my, triG);
+    const isRight = this.pointInPolygon(mx, my, triD);
+    const newSide = isLeft ? "left" : isRight ? "right" : null;
+    return { isLeft, isRight, newSide };
+  }
+  preloadAndSetup(p) {
+    // ton preload, setup, etc.
+    this.setupMouseMove(p);
+    this.setupWheel(p);
+  }
+
   _animationsRunning() {
     return this.tunnels.some((tunnel) =>
       tunnel.some(
