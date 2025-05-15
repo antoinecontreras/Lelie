@@ -83,6 +83,8 @@ class CanvasManager {
             });
           });
         });
+        this.currentTunnel = this.tunnels[this.s.visualIndex];
+        this._enterTunnel(this.currentTunnel);
       };
       this.setupMouseMove(p);
       this.setupWheel(p);
@@ -129,21 +131,21 @@ class CanvasManager {
   setupMouseMove(p) {
     p.mouseMoved = () => {
       const w = p.width,
-      h = p.height,
-      cx = w / 2,
-      cy = h / 2,
-      mx = p.mouseX,
-      my = p.mouseY,
-      triG = [
-        { x: 0, y: 0 },
-        { x: cx, y: cy },
-        { x: 0, y: h },
-      ],
-      triD = [
-        { x: w, y: 0 },
-        { x: cx, y: cy },
-        { x: w, y: h },
-      ];
+        h = p.height,
+        cx = w / 2,
+        cy = h / 2,
+        mx = p.mouseX,
+        my = p.mouseY,
+        triG = [
+          { x: 0, y: 0 },
+          { x: cx, y: cy },
+          { x: 0, y: h },
+        ],
+        triD = [
+          { x: w, y: 0 },
+          { x: cx, y: cy },
+          { x: w, y: h },
+        ];
 
       const isLeft = this.pointInPolygon(mx, my, triG);
       const isRight = this.pointInPolygon(mx, my, triD);
@@ -151,23 +153,23 @@ class CanvasManager {
 
       // 1) Si on change de zone, on ferme l'ancien
       if (newSide !== this.s.currentSide) {
-      if (this.s.prevHoverTunnel) {
-        this._closeTunnel(this.s.prevHoverTunnel);
-        this.s.prevHoverTunnel = null;
-        this.s.draw = true; // Only set draw=true if we actually close something
-      }
+        if (this.s.prevHoverTunnel) {
+          this._closeTunnel(this.s.prevHoverTunnel);
+          this.s.prevHoverTunnel = null;
+          this.s.draw = true; // Only set draw=true if we actually close something
+        }
       }
 
       // 2) Si on sort complètement, on réinitialise et on s'arrête
       if (newSide === null) {
-      console.log("out");
-      this.s.currentSide = null;
-      return;
+        console.log("out");
+        this.s.currentSide = null;
+        return;
       }
 
       // 3) Si on reste dans la même zone, on ne fait rien
       if (newSide === this.s.currentSide) {
-      return;
+        return;
       }
 
       // 4) Sinon on ouvre le nouveau volet (gauche ou droite)
@@ -182,6 +184,19 @@ class CanvasManager {
       this.s.draw = true;
       this.p5Instance.loop();
     };
+  }
+  _getTitle(element) {
+    const el = document.querySelector(`.scene>a:nth-child(${element + 1})`);
+    const focused = document.querySelector('.scene>a.focus');
+    if (focused === el) return;
+    focused?.classList.remove('focus');
+    el.classList.add('focus');
+  }
+  _enterTunnel(frames) {
+    // console.log(frames);
+    // frames.filter((v) => v.cfg.texKind === "frame");
+    // frames.forEach((v) => (v.style.opacity = 103));
+    // this.s.prevOpenTunnel = frames;
   }
   setupWheel(p) {
     window.addEventListener(
@@ -211,16 +226,18 @@ class CanvasManager {
           this.s.current = clamped;
           this.s.visualIndex = this.textures.length - 1 - clamped;
 
-          console.log("After update: ", this.s.visualIndex); // Affiche la nouvelle valeur de visualIndex
+          // console.log("After update: ", this.s.visualIndex); // Affiche la nouvelle valeur de visualIndex
 
           // Ouverture du nouveau tunnel
           this.currentTunnel = this.tunnels[this.s.visualIndex];
-          const frames = this.currentTunnel.filter(
-            (v) => v.cfg.texKind === "frame"
-          );
-          frames.forEach((v) => (v.style.opacity = 205));
+          this._enterTunnel(this.currentTunnel);
+          this._getTitle(this.s.visualIndex);
+          // const frames = this.currentTunnel.filter(
+          //   (v) => v.cfg.texKind === "frame"
+          // );
+          // frames.forEach((v) => (v.style.opacity = 205));
 
-          this.s.prevOpenTunnel = frames;
+          // this.s.prevOpenTunnel = frames;
         }
 
         this.p5Instance.loop();
@@ -298,7 +315,6 @@ class CanvasManager {
     );
   }
   _initCamera(p) {
-
     const c = {
       // foxy: p.radians(p.height / 16.27),
       foxy: p.radians(p.height / 16.27),
@@ -319,7 +335,6 @@ class CanvasManager {
         angle: -90,
         swapUV: false,
       },
-
       {
         texKind: "merged",
         x: this.sw / 2,
