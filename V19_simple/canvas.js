@@ -162,7 +162,6 @@ class CanvasManager {
 
       // 2) Si on sort complètement, on réinitialise et on s'arrête
       if (newSide === null) {
-        console.log("out");
         this.s.currentSide = null;
         return;
       }
@@ -187,10 +186,10 @@ class CanvasManager {
   }
   _getTitle(element) {
     const el = document.querySelector(`.scene>a:nth-child(${element + 1})`);
-    const focused = document.querySelector('.scene>a.focus');
+    const focused = document.querySelector(".scene>a.focus");
     if (focused === el) return;
-    focused?.classList.remove('focus');
-    el.classList.add('focus');
+    focused?.classList.remove("focus");
+    el.classList.add("focus");
   }
   _enterTunnel(frames) {
     // console.log(frames);
@@ -262,6 +261,7 @@ class CanvasManager {
       { x: cx, y: cy },
       { x: w, y: h },
     ];
+
     const isLeft = this.pointInPolygon(mx, my, triG);
     const isRight = this.pointInPolygon(mx, my, triD);
     const newSide = isLeft ? "left" : isRight ? "right" : null;
@@ -293,6 +293,26 @@ class CanvasManager {
     });
   }
   pointInPolygon(x, y, poly) {
+    // let inside = false;
+    // for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    //   const xi = poly[i].x,
+    //   yi = poly[i].y;
+    //   const xj = poly[j].x,
+    //   yj = poly[j].y;
+    //   const intersect =
+    //   yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
+    //   if (intersect) inside = !inside;
+    // }
+
+    // // Add a dead zone in the middle (20% of screen width)
+    // const centerX = this.p5Instance.width / 2;
+    // const margin = this.p5Instance.width * 0.1; // 10% margin on each side
+    // if (x > centerX - margin && x < centerX + margin) {
+    //   return false;
+    // }
+
+    // return inside;
+
     let inside = false;
     for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
       const xi = poly[i].x,
@@ -303,6 +323,23 @@ class CanvasManager {
         yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
       if (intersect) inside = !inside;
     }
+
+    const fovy = this.c.foxy;
+    const aspect = this.p5Instance.width / this.p5Instance.height;
+    // distance caméra→plan (caméra à z = f_y par défaut)
+    const f_y = this.p5Instance.height / (2 * Math.tan(fovy / 2));
+    const cameraZ = f_y;
+    const depth = cameraZ;
+
+    // moitié de la largeur visible du frustum à cette profondeur
+    const halfWidth = depth * Math.tan(fovy / 2) * aspect;
+
+    // ❸ dead-zone centrale
+    const cx = this.p5Instance.width / 2;
+    if (x > cx - halfWidth && x < cx + halfWidth) {
+      return false;
+    }
+
     return inside;
   }
   _getFoxy(sw) {
