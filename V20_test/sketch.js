@@ -15,7 +15,7 @@ function draw() {
   strokeWeight(0.9);
 
 
-   const of = computeOfEase(width, 1.1);
+   const of = computeOfEase(width, 1.12);
    console.log(of, width)
   push();
     translate(-width/2, -height/4, 0);
@@ -40,11 +40,10 @@ function windowResized(){
 
 }
 
-function computeOfEase(w, exponent = 1.12) {
+function computeOfEase(w, exponent = 1.9) {
    const inMin   = 300,  outMin =  40;
   const midIn   = 514,  outMid = 100;
-  const inMax   = 1526, outMax = 500;
-
+  const inMax   = 1995, outMax = 712;
   if (w < midIn) {
     // 1er segment 300→514 → 40→100
     let t = (w - inMin) / (midIn - inMin);

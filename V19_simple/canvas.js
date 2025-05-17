@@ -147,9 +147,17 @@ class CanvasManager {
           { x: w, y: h },
         ];
 
-      const isLeft = this.pointInPolygon(mx, my, triG);
-      const isRight = this.pointInPolygon(mx, my, triD);
-      const newSide = isLeft ? "left" : isRight ? "right" : null;
+      const margin = this.computeOfEase(this.sw, 1.11);
+      const isInDeadZone = mx > margin && mx < this.sw - margin;
+
+      // Only check polygons if not in dead zone
+      const newSide = isInDeadZone
+        ? null
+        : this.pointInPolygon(mx, p.mouseY, triG)
+        ? "left"
+        : this.pointInPolygon(mx, p.mouseY, triD)
+        ? "right"
+        : null;
 
       // 1) Si on change de zone, on ferme l'ancien
       if (newSide !== this.s.currentSide) {
@@ -167,9 +175,7 @@ class CanvasManager {
       }
 
       // 3) Si on reste dans la même zone, on ne fait rien
-      if (newSide === this.s.currentSide) {
-        return;
-      }
+      if (newSide === this.s.currentSide) return;
 
       // 4) Sinon on ouvre le nouveau volet (gauche ou droite)
       const idx = newSide === "left" ? 0 : 1;
@@ -211,7 +217,7 @@ class CanvasManager {
         // Calcul du nouvel index et clamp
         const step = Math.floor(this.s.base / this.sw);
         const clamped = Math.max(0, Math.min(this.textures.length - 1, step));
-
+        
         if (clamped !== this.s.current) {
           // Fermeture du tunnel précédent
           this._closeTunnel(this.s.prevHoverTunnel);
@@ -293,26 +299,6 @@ class CanvasManager {
     });
   }
   pointInPolygon(x, y, poly) {
-    // let inside = false;
-    // for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
-    //   const xi = poly[i].x,
-    //   yi = poly[i].y;
-    //   const xj = poly[j].x,
-    //   yj = poly[j].y;
-    //   const intersect =
-    //   yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
-    //   if (intersect) inside = !inside;
-    // }
-
-    // // Add a dead zone in the middle (20% of screen width)
-    // const centerX = this.p5Instance.width / 2;
-    // const margin = this.p5Instance.width * 0.1; // 10% margin on each side
-    // if (x > centerX - margin && x < centerX + margin) {
-    //   return false;
-    // }
-
-    // return inside;
-
     let inside = false;
     for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
       const xi = poly[i].x,
@@ -324,23 +310,39 @@ class CanvasManager {
       if (intersect) inside = !inside;
     }
 
-    const fovy = this.c.foxy;
-    const aspect = this.p5Instance.width / this.p5Instance.height;
-    // distance caméra→plan (caméra à z = f_y par défaut)
-    const f_y = this.p5Instance.height / (2 * Math.tan(fovy / 2));
-    const cameraZ = f_y;
-    const depth = cameraZ;
+    // const W = this.p5Instance.width;
+    // const margin = this.computeOfEase(W, 1.11);
+    // const left = margin;
+    // const right = W - margin;
 
-    // moitié de la largeur visible du frustum à cette profondeur
-    const halfWidth = depth * Math.tan(fovy / 2) * aspect;
-
-    // ❸ dead-zone centrale
-    const cx = this.p5Instance.width / 2;
-    if (x > cx - halfWidth && x < cx + halfWidth) {
-      return false;
-    }
+    // // on n'active que si x est à gauche OU à droite
+    // if (x > left && x < right) {
+    //   return false;
+    // }
 
     return inside;
+  }
+  computeOfEase(w, exponent = 1.9) {
+    
+    const inMin = 300,
+      outMin = 40;
+    const midIn = 514,
+      outMid = 100;
+    const inMax = 1995,
+      outMax = 712;
+    if (w < midIn) {
+      // 1er segment 300→514 → 40→100
+      let t = (w - inMin) / (midIn - inMin);
+      // on laisse t libre : pour w<inMin t<0 → signed ease si besoin
+      let tt = t < 0 ? -pow(-t, exponent) : pow(t, exponent);
+      return lerp(outMin, outMid, tt);
+    } else {
+      // 2e segment 514→1526 → 100→500
+      let t = (w - midIn) / (inMax - midIn);
+      // **NE PAS** clamp : t>1 → extrapolation beyond outMax
+      let tt = this.p5Instance.pow(t, exponent);
+      return this.p5Instance.lerp(outMid, outMax, tt);
+    }
   }
   _getFoxy(sw) {
     return this.p5Instance.map(
