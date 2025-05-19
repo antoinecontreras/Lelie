@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>screenPosition demo</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden
+    }
+  </style>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.3/p5.js"></script>
+  <script src="/SOURCE/addScreenPositionFunction.js"></script>
+</head>
+
+<body>
+  <script>
+    p5.disableFriendlyErrors = true;
+
+
+    function setup() {
+      createCanvas(windowWidth, windowHeight, WEBGL);
+
+      addScreenPositionFunction();
+
+      angleMode(DEGREES);
+      // rectMode(CENTER);
+      stroke(255);
+    }
+
+    function draw() {
+      background(20);
+      let pts = [];
+
+      push();
+      rotateY(frameCount);
+
+
+      line(-100, -100, 100, -100);  // côté supérieur
+      line(100, -100, 100, 100);  // côté droit
+      line(100, 100, -100, 100);  // côté inférieur
+      line(-100, 100, -100, -100);  // côté gauche
+      // plane(30, 50);
+
+
+
+      var p1 = screenPosition(-100, -100, 0);
+      var p2 = screenPosition(100, 100, 0);
+
+      // fill(128);
+      // rect(0, 0, 200, 200);
+      pop();
+      // resetMatrix();
+      fill(255, 0, 0);
+      circle(p1.x, p1.y, 10);
+      circle(p2.x, p2.y, 10);
+    }
+
+
+  </script>
+</body>
+
+</html>

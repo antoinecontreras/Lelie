@@ -24,7 +24,7 @@ function setup() {
 
   rectMode(CENTER);
   graphics.rectMode(CENTER);
-  graphics.translate(-width/4, 0, 0);  // Adjusted this value
+  graphics.translate(-width/4, 0, 0);
   graphics.rotateY(PI * -1.5);
   noLoop();
 }
@@ -34,6 +34,7 @@ function draw() {
   graphics.clear();
 
   graphics.rect(0, 0, values.w, values.h);
+  // Adjust the x position to exactly match the left edge
   image(graphics, 0, 0);
 
   push();
