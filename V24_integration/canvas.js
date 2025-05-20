@@ -14,6 +14,7 @@ class CanvasManager {
         currentSide: null,
         prevHoverTunnel: null,
         prevOpenTunnel: null,
+        inVolet:false,
       };
       const styleDatas = [
         ["pointer-events", "none"],
@@ -99,16 +100,19 @@ class CanvasManager {
     p.clear();
     p.noStroke();
     const corners = this.drawTunnel(p);
-    const mouseX = p.mouseX;
-    const closestX = corners.x.reduce((closest, current) => 
-      Math.abs(current - mouseX) < Math.abs(closest - mouseX) ? current : closest
-    );
-    console.log('Closest X to mouse:', closestX);
-    corners.points.forEach((point) => {
-      p.fill(point.r === 90 ? 0 : 255, point.r === -90 ? 0 : 255, 0);
-      p.circle(point.x, point.y, 10);
+    if(this.s.inVolet){
+  // console.log(corners);
+    const mapX = p.map(p.mouseX, 0, this.sw, -this.sw / 2, this.sw / 2);
+    const isInside = corners.find(({ p1, p2 }) => {
+      const min = Math.min(p1, p2);
+      const max = Math.max(p1, p2);
+      return mapX >= min && mapX <= max;
     });
-    // console.log(cornetcers);
+
+    if (isInside) {
+      console.log("Mouse is inside segment", corners.indexOf(isInside));
+    }
+    }
   
 
     if (this._animationsRunning()) {
@@ -152,46 +156,49 @@ class CanvasManager {
           { x: cx, y: cy },
           { x: w, y: h },
         ];
+        
+        const isInLeftTriangle = this.pointInPolygon(mx, my, triG);
+        const isInRightTriangle = this.pointInPolygon(mx, my, triD);
+        this.s.inVolet = isInLeftTriangle ? "left" : isInRightTriangle ? "right" : false;
+      // const margin = this.computeOfEase(this.sw, 1.11);
+      // const isInDeadZone = mx > margin && mx < this.sw - margin;
 
-      const margin = this.computeOfEase(this.sw, 1.11);
-      const isInDeadZone = mx > margin && mx < this.sw - margin;
+      // // Only check polygons if not in dead zone
+      // const newSide = isInDeadZone
+      //   ? null
+      //   : this.pointInPolygon(mx, p.mouseY, triG)
+      //   ? "left"
+      //   : this.pointInPolygon(mx, p.mouseY, triD)
+      //   ? "right"
+      //   : null;
 
-      // Only check polygons if not in dead zone
-      const newSide = isInDeadZone
-        ? null
-        : this.pointInPolygon(mx, p.mouseY, triG)
-        ? "left"
-        : this.pointInPolygon(mx, p.mouseY, triD)
-        ? "right"
-        : null;
+      // // 1) Si on change de zone, on ferme l'ancien
+      // if (newSide !== this.s.currentSide) {
+      //   if (this.s.prevHoverTunnel) {
+      //     this._closeTunnel(this.s.prevHoverTunnel);
+      //     this.s.prevHoverTunnel = null;
+      //     this.s.draw = true; // Only set draw=true if we actually close something
+      //   }
+      // }
 
-      // 1) Si on change de zone, on ferme l'ancien
-      if (newSide !== this.s.currentSide) {
-        if (this.s.prevHoverTunnel) {
-          this._closeTunnel(this.s.prevHoverTunnel);
-          this.s.prevHoverTunnel = null;
-          this.s.draw = true; // Only set draw=true if we actually close something
-        }
-      }
+      // // 2) Si on sort complètement, on réinitialise et on s'arrête
+      // if (newSide === null) {
+      //   this.s.currentSide = null;
+      //   return;
+      // }
 
-      // 2) Si on sort complètement, on réinitialise et on s'arrête
-      if (newSide === null) {
-        this.s.currentSide = null;
-        return;
-      }
+      // // 3) Si on reste dans la même zone, on ne fait rien
+      // if (newSide === this.s.currentSide) return;
 
-      // 3) Si on reste dans la même zone, on ne fait rien
-      if (newSide === this.s.currentSide) return;
-
-      // 4) Sinon on ouvre le nouveau volet (gauche ou droite)
-      const idx = newSide === "left" ? 0 : 1;
-      let raw = this.tunnels[this.s.visualIndex][idx];
-      const frames = Array.isArray(raw) ? raw : [raw];
-      this._openTunnel(frames);
+      // // 4) Sinon on ouvre le nouveau volet (gauche ou droite)
+      // const idx = newSide === "left" ? 0 : 1;
+      // let raw = this.tunnels[this.s.visualIndex][idx];
+      // const frames = Array.isArray(raw) ? raw : [raw];
+      // this._openTunnel(frames);
 
       // 5) Mémoire + redraw
-      this.s.prevHoverTunnel = frames;
-      this.s.currentSide = newSide;
+      // this.s.prevHoverTunnel = frames;
+      // this.s.currentSide = newSide;
       this.s.draw = true;
       this.p5Instance.loop();
     };
@@ -295,37 +302,42 @@ class CanvasManager {
     );
   }
   drawTunnel(p) {
-    let points = [];
-    let xc = [];
-    this.tunnels.forEach((voletList, idx) => {
-      const rev = this.textures.length - 1 - idx;
-      const z = this.s.base - rev * this.sw;
-      voletList.forEach((volet) => {
+    const xc = [];
+    const halfSw = this.sw / 2;
+    const halfSh = this.sh / 2;
+
+    for (let idx = 0; idx < this.tunnels.length; idx++) {
+      const voletList = this.tunnels[idx];
+      const z = this.s.base - (this.textures.length - 1 - idx) * this.sw;
+
+      for (const volet of voletList) {
         volet.cfg.z = z;
         volet.draw();
+
         const angle = volet.initialAngle;
-        if (angle === -90 || angle === 90) {
-          const x = angle === 90 ? volet.cfg.w : 0;
-          const p1 = p.screenPosition(x, 0, 0);
-          // p.fill(angle === 90 ? 0 : 255, angle === -90 ? 0 : 255, 0);
-          // p.circle(p1.x, p1.y, 10);
-          points.push({ x: p1.x, y: p1.y, r: angle });
-          xc.push(p.map(p1.x, -this.sw/2, this.sw/2, 0, this.sw));
-        }
-      });
+        if (angle !== -90 && angle !== 90) continue;
 
-      // var p2 = p.screenPosition(w, 0, 0);
+        const isLeftSide = angle === 90;
+        const x = isLeftSide ? 0 : volet.cfg.w;
 
-      // fill(128);
-      // rect(0, 0, 200, 200);
+        if (z > volet.cfg.w) continue;
 
-      // resetMatrix();
-      // console.log(voletList);
-      // p.circle(p2.x, p2.y, 10);
-    });
-    return { points: points, x: xc };
+        const p1 = z > 0
+          ? { x: isLeftSide ? -halfSw : halfSw, y: -halfSh }
+          : p.screenPosition(x, 0, 0);
+
+        const p2 = p.screenPosition(
+          x + (isLeftSide ? volet.cfg.w : -volet.cfg.w),
+          20,
+          0
+        );
+
+        xc.push({ p1: p1.x, p2: p2.x });
+      }
+    }
+    return xc;
   }
-  
+
   pointInPolygon(x, y, poly) {
     let inside = false;
     for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
