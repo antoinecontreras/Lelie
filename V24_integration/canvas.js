@@ -1,6 +1,5 @@
 class CanvasManager {
   constructor() {
-    // this.request = this._animation.bind(this);
     this.p5Instance = new p5((p) => {
       this.textures = [];
       this.s = {
@@ -26,11 +25,12 @@ class CanvasManager {
         this.textures.push(p.loadImage("../IMG/frame_05.jpg"));
         this.textures.push(p.loadImage("../IMG/frame_06.jpg"));
         this.textures.push(p.loadImage("../IMG/p_a.jpg"));
-        // this.textures.push(p.loadImage("../IMG/p_b.jpg"));
-        // this.textures.push(p.loadImage("../IMG/frame_06.jpg"));
-        // this.textures.push(p.loadImage("../IMG/frame_05.jpg"));
-        // this.textures.push(p.loadImage("../IMG/p_b.jpg"));
-        // this.textures.push(p.loadImage("../IMG/p_a.jpg"));
+        this.textures.push(p.loadImage("../IMG/p_b.jpg"));
+        this.textures.push(p.loadImage("../IMG/frame_06.jpg"));
+        this.textures.push(p.loadImage("../IMG/frame_05.jpg"));
+        this.textures.push(p.loadImage("../IMG/p_b.jpg"));
+        this.textures.push(p.loadImage("../IMG/p_a.jpg"));
+        this.preloadAndSetup(p);
       };
       p.setup = () => {
         this.canvas = p.createCanvas(
@@ -62,7 +62,7 @@ class CanvasManager {
         this.s.isAnimating = false;
         this.s.base = this.s.raw * (this.sw / 3000);
         this.s.scale = this.sw / 3000;
-        // this.c = this._initCamera(p);
+        this.c = this._initCamera(p);
         this.s.visualIndex = this.textures.length - 1;
         this.panelOffset = (this.textures.length - 1) * this.sw;
         addScreenPositionFunction(p);
@@ -79,16 +79,11 @@ class CanvasManager {
           });
         });
         this.s.prevHoverTunnel = this.tunnels[this.tunnels.length - 1];
-
-        // this.currentTunnel = this.tunnels[this.s.visualIndex];
-        // this._enterTunnel(this.currentTunnel);
+        console.log(this.s.prevHoverTunnel);
+        this._enterTunnel(this.s.prevHoverTunnel);
       };
-      this.setupMouseMove(p);
-      this.setupWheel(p);
 
       p.draw = this._draw.bind(this, p);
-
-      // …puis dans setup() ou là où tu ajoutes l’évènement wheel :
 
       p.windowResized = () => {
         p.resizeCanvas(window.innerWidth, window.innerHeight);
@@ -117,7 +112,7 @@ class CanvasManager {
 
         if (isInSide) {
           if (
-            this.currentTunnel !== this.s.prevOpenTunnel &&
+            this.activeTunnel !== this.s.prevOpenTunnel &&
             this.s.prevOpenTunnel
           ) {
             this.tunnels.forEach((tunnel) => {
@@ -128,10 +123,13 @@ class CanvasManager {
               this.p5Instance.loop();
             });
           }
+          if (this.s.current !== this.textures.length - 1 - i)
+            this.s.current = this.textures.length - 1 - i;
+
           this.currentTunnel =
             this.tunnels[i][this.s.inVolet === "left" ? 0 : 1];
           this._openTunnel(this.tunnels[i][this.s.inVolet === "left" ? 0 : 1]);
-        } 
+        }
       }
     }
 
@@ -143,16 +141,11 @@ class CanvasManager {
       this.s.isAnimating = false;
     }
   }
-  // ferme un tableau de Volets “frame”
-  _closeTunnel(frame) {
-    frame.close();
-  }
 
   // ouvre un tableau de Volets “frame” à l’angle normal
   _openTunnel(frame) {
     const delta = frame.cfg.angle < 0 ? -this.s.delta : +this.s.delta;
     frame.open(delta);
-    // frame.isOpen = true;
   }
   setupMouseMove(p) {
     p.mouseMoved = () => {
@@ -197,6 +190,37 @@ class CanvasManager {
       }
     };
   }
+  setupMouseClicked(p) {
+    p.mouseClicked = () => {
+      if (this.s.inVolet == false) return;
+      // Update raw and base position based on current selected frame
+      this.s.raw = this.s.current * this.sw / this.s.scale;
+      this.s.base = this.s.raw * this.s.scale;
+      this.s.draw = true;
+
+      // Close previous tunnel if exists
+      if (this.s.prevHoverTunnel) {
+        this.s.prevHoverTunnel
+          .filter(volet => volet.cfg.texKind === "frame")
+          .forEach(volet => {
+        volet.close();
+        volet.sleep();
+          });
+      }
+
+      // Update visual indices
+      this.s.visualIndex = this.textures.length - 1 - this.s.current;
+      console.log( this.s.visualIndex);
+      this.s.scrollFrame = this.tunnels[this.s.visualIndex];
+      
+      // Enter new tunnel and update UI
+      this._enterTunnel(this.s.scrollFrame);
+      this._getTitle(this.s.visualIndex);
+      this.s.prevHoverTunnel = this.s.scrollFrame;
+
+      // }
+    };
+  }
   _getTitle(element) {
     const el = document.querySelector(`.scene>a:nth-child(${element + 1})`);
     const focused = document.querySelector(".scene>a.focus");
@@ -205,10 +229,10 @@ class CanvasManager {
     el.classList.add("focus");
   }
   _enterTunnel(frames) {
-    // console.log(frames);
-    // frames.filter((v) => v.cfg.texKind === "frame");
-    // frames.forEach((v) => (v.style.opacity = 103));
-    // this.s.prevOpenTunnel = frames;
+    frames.filter((v) => v.cfg.texKind === "frame");
+    frames.forEach((v) => {
+      v.focus();
+    });
   }
   setupWheel(p) {
     window.addEventListener(
@@ -227,31 +251,29 @@ class CanvasManager {
 
         if (clamped !== this.s.current) {
           // Fermeture du tunnel précédent
-          console.log(this.s.prevHoverTunnel);
+
           this.s.prevHoverTunnel
             .filter((volet) => volet.cfg.texKind == "frame")
-            .forEach((volet) => volet.close());
+            .forEach((volet) => {
+              volet.close();
+              volet.sleep();
+            });
 
           this.s.current = clamped;
           this.s.visualIndex = this.textures.length - 1 - clamped;
 
-          // Ouverture du nouveau tunnel
-          this.currentTunnel = this.tunnels[this.s.visualIndex];
-          // this._enterTunnel(this.currentTunnel);
+          this.s.scrollFrame = this.tunnels[this.s.visualIndex];
+          this._enterTunnel(this.s.scrollFrame);
+
+          this._enterTunnel(this.s.scrollFrame);
           this._getTitle(this.s.visualIndex);
-          this.s.prevHoverTunnel = this.currentTunnel;
+          this.s.prevHoverTunnel = this.s.scrollFrame;
         }
 
         this.p5Instance.loop();
       },
       { passive: false }
     );
-  }
-
-  preloadAndSetup(p) {
-    // ton preload, setup, etc.
-    this.setupMouseMove(p);
-    this.setupWheel(p);
   }
 
   _animationsRunning() {
@@ -317,15 +339,15 @@ class CanvasManager {
     return inside;
   }
 
-  _getFoxy(sw) {
-    return this.p5Instance.map(
-      sw,
-      this.fovyParams.minWidth,
-      this.fovyParams.maxWidth,
-      this.fovyParams.minFovy,
-      this.fovyParams.maxFovy
-    );
-  }
+  // _getFoxy(sw) {
+  //   return this.p5Instance.map(
+  //     sw,
+  //     this.fovyParams.minWidth,
+  //     this.fovyParams.maxWidth,
+  //     this.fovyParams.minFovy,
+  //     this.fovyParams.maxFovy
+  //   );
+  // }
   _initCamera(p) {
     const c = {
       // foxy: p.radians(p.height / 16.27),
@@ -463,5 +485,11 @@ class CanvasManager {
     const mergedImg = m.get();
 
     return maskFn(mergedImg);
+  }
+  preloadAndSetup(p) {
+    // ton preload, setup, etc.
+    this.setupMouseMove(p);
+    this.setupMouseClicked(p);
+    this.setupWheel(p);
   }
 }

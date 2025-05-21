@@ -8,11 +8,21 @@ class Volet {
     this.targetAngle = cfg.angle;
     this.animSpeed = 0.2;
     // opacité
-    this.style = {};
+    this.style = {
+      // opacity: 105,
+      focus: 255,
+      sleep: 105,
+    };
+    this.style.opacity = this.style.sleep;
     this.isOpen = false;
     this.fade("close");
   }
-
+  focus() {
+    this.style.opacity = this.style.focus;
+  }
+  sleep() {
+    this.style.opacity = this.style.sleep;
+  }
   open(delta) {
     this.isOpen = true;
     this.fade("open");
@@ -27,13 +37,13 @@ class Volet {
   fade(state) {
     if (state == "open") {
       if (this.cfg.texKind === "frame") {
-        this.style.opacity = 255;
+        // this.style.opacity = this.style.focus;
       }
     } else if (state == "close") {
       if (this.cfg.texKind === "frame") {
-        this.style.opacity = 105;
+        // this.style.opacity = this.style.sleep;
       } else {
-        this.style.opacity = 65;
+        // this.style.opacity = 65;
       }
     }
   }
@@ -61,13 +71,14 @@ class Volet {
     p.translate(-x, -y);
 
     // applique la tint + opacité
-    // p.tint(255, this.style.opacity);
     p.tint(255, this.style.opacity);
+    // p.tint(p.saturation(0, 255, 191.5), this.style.opacity);
 
     const uW = swapUV ? h : w;
     const uH = swapUV ? w : h;
     p.noStroke();
     p.textureMode(p.NORMAL);
+
     p.texture(this.tex);
     p.beginShape();
     p.vertex(0, 0, 0, 0);
