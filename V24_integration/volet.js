@@ -9,16 +9,19 @@ class Volet {
     this.animSpeed = 0.2;
     // opacité
     this.style = {};
+    this.isOpen = false;
     this.fade("close");
   }
 
   open(delta) {
-     this.fade("open");
+    this.isOpen = true;
+    this.fade("open");
     this.targetAngle = this.initialAngle + delta;
   }
   close() {
     this.fade("close");
     this.targetAngle = this.initialAngle;
+    this.isOpen = false;
   }
 
   fade(state) {
@@ -26,8 +29,8 @@ class Volet {
       if (this.cfg.texKind === "frame") {
         this.style.opacity = 255;
       }
-    }else if((state == "close")){
-       if (this.cfg.texKind === "frame") {
+    } else if (state == "close") {
+      if (this.cfg.texKind === "frame") {
         this.style.opacity = 105;
       } else {
         this.style.opacity = 65;

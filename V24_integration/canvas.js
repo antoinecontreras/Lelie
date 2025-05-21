@@ -14,7 +14,7 @@ class CanvasManager {
         currentSide: null,
         prevHoverTunnel: null,
         prevOpenTunnel: null,
-        inVolet:false,
+        inVolet: false,
       };
       const styleDatas = [
         ["pointer-events", "none"],
@@ -78,8 +78,10 @@ class CanvasManager {
             });
           });
         });
-        this.currentTunnel = this.tunnels[this.s.visualIndex];
-        this._enterTunnel(this.currentTunnel);
+        this.s.prevHoverTunnel = this.tunnels[this.tunnels.length - 1];
+
+        // this.currentTunnel = this.tunnels[this.s.visualIndex];
+        // this._enterTunnel(this.currentTunnel);
       };
       this.setupMouseMove(p);
       this.setupWheel(p);
@@ -100,23 +102,41 @@ class CanvasManager {
     p.clear();
     p.noStroke();
     const corners = this.drawTunnel(p);
-    if(this.s.inVolet){
-  // console.log(corners);
-    const mapX = p.map(p.mouseX, 0, this.sw, -this.sw / 2, this.sw / 2);
-    const isInside = corners.find(({ p1, p2 }) => {
-      const min = Math.min(p1, p2);
-      const max = Math.max(p1, p2);
-      return mapX >= min && mapX <= max;
-    });
+    if (this.s.inVolet) {
+      const mapX = p.map(p.mouseX, 0, this.sw, -this.sw / 2, this.sw / 2);
 
-    if (isInside) {
-      console.log("Mouse is inside segment", corners.indexOf(isInside));
+      for (let i = 0; i < corners.length; i++) {
+        const leftSide = corners[i][0];
+        const rightSide = corners[i][1];
+        if (!leftSide && !rightSide) continue;
+
+        const side = this.s.inVolet === "left" ? leftSide : rightSide;
+        const isInSide =
+          mapX >= Math.min(side.p1, side.p2) &&
+          mapX <= Math.max(side.p1, side.p2);
+
+        if (isInSide) {
+          if (
+            this.currentTunnel !== this.s.prevOpenTunnel &&
+            this.s.prevOpenTunnel
+          ) {
+            this.tunnels.forEach((tunnel) => {
+              tunnel
+                .filter((volet) => volet.isOpen == true)
+                .forEach((volet) => volet.close());
+              this.s.draw = true;
+              this.p5Instance.loop();
+            });
+          }
+          this.currentTunnel =
+            this.tunnels[i][this.s.inVolet === "left" ? 0 : 1];
+          this._openTunnel(this.tunnels[i][this.s.inVolet === "left" ? 0 : 1]);
+        } 
+      }
     }
-    }
-  
 
     if (this._animationsRunning()) {
-      this.p5Instance.loop();
+      // this.p5Instance.loop();
     } else {
       this.s.prevOpenTunnel = this.currentTunnel;
       this.s.draw = false;
@@ -124,19 +144,15 @@ class CanvasManager {
     }
   }
   // ferme un tableau de Volets “frame”
-  _closeTunnel(frames) {
-    if (!frames) return;
-    frames.filter((v) => v.cfg.texKind === "frame").forEach((v) => v.close());
+  _closeTunnel(frame) {
+    frame.close();
   }
 
   // ouvre un tableau de Volets “frame” à l’angle normal
-  _openTunnel(frames) {
-    frames
-      .filter((v) => v.cfg.texKind === "frame")
-      .forEach((v) => {
-        const delta = v.cfg.angle < 0 ? -this.s.delta : +this.s.delta;
-        v.open(delta);
-      });
+  _openTunnel(frame) {
+    const delta = frame.cfg.angle < 0 ? -this.s.delta : +this.s.delta;
+    frame.open(delta);
+    // frame.isOpen = true;
   }
   setupMouseMove(p) {
     p.mouseMoved = () => {
@@ -156,51 +172,29 @@ class CanvasManager {
           { x: cx, y: cy },
           { x: w, y: h },
         ];
-        
-        const isInLeftTriangle = this.pointInPolygon(mx, my, triG);
-        const isInRightTriangle = this.pointInPolygon(mx, my, triD);
-        this.s.inVolet = isInLeftTriangle ? "left" : isInRightTriangle ? "right" : false;
-      // const margin = this.computeOfEase(this.sw, 1.11);
-      // const isInDeadZone = mx > margin && mx < this.sw - margin;
 
-      // // Only check polygons if not in dead zone
-      // const newSide = isInDeadZone
-      //   ? null
-      //   : this.pointInPolygon(mx, p.mouseY, triG)
-      //   ? "left"
-      //   : this.pointInPolygon(mx, p.mouseY, triD)
-      //   ? "right"
-      //   : null;
-
-      // // 1) Si on change de zone, on ferme l'ancien
-      // if (newSide !== this.s.currentSide) {
-      //   if (this.s.prevHoverTunnel) {
-      //     this._closeTunnel(this.s.prevHoverTunnel);
-      //     this.s.prevHoverTunnel = null;
-      //     this.s.draw = true; // Only set draw=true if we actually close something
-      //   }
-      // }
-
-      // // 2) Si on sort complètement, on réinitialise et on s'arrête
-      // if (newSide === null) {
-      //   this.s.currentSide = null;
-      //   return;
-      // }
-
-      // // 3) Si on reste dans la même zone, on ne fait rien
-      // if (newSide === this.s.currentSide) return;
-
-      // // 4) Sinon on ouvre le nouveau volet (gauche ou droite)
-      // const idx = newSide === "left" ? 0 : 1;
-      // let raw = this.tunnels[this.s.visualIndex][idx];
-      // const frames = Array.isArray(raw) ? raw : [raw];
-      // this._openTunnel(frames);
-
-      // 5) Mémoire + redraw
-      // this.s.prevHoverTunnel = frames;
-      // this.s.currentSide = newSide;
-      this.s.draw = true;
-      this.p5Instance.loop();
+      const isInLeftTriangle = this.pointInPolygon(mx, my, triG);
+      const isInRightTriangle = this.pointInPolygon(mx, my, triD);
+      this.s.inVolet = isInLeftTriangle
+        ? "left"
+        : isInRightTriangle
+        ? "right"
+        : false;
+      if (this.s.inVolet) {
+        this.s.draw = true;
+        this.p5Instance.loop();
+      } else {
+        // this.tunnels.forEach((volet) => volet.filter((frame) => frame.cfg));
+        this.tunnels.forEach((volet) => {
+          volet
+            .filter((frame) => frame.isOpen == true)
+            .forEach((frame) => {
+              frame.close();
+              this.s.draw = true;
+              this.p5Instance.loop();
+            });
+        });
+      }
     };
   }
   _getTitle(element) {
@@ -233,29 +227,19 @@ class CanvasManager {
 
         if (clamped !== this.s.current) {
           // Fermeture du tunnel précédent
-          this._closeTunnel(this.s.prevHoverTunnel);
-          this.s.prevHoverTunnel = null;
-          this.s.currentSide = null;
+          console.log(this.s.prevHoverTunnel);
+          this.s.prevHoverTunnel
+            .filter((volet) => volet.cfg.texKind == "frame")
+            .forEach((volet) => volet.close());
 
-          // Fermeture du tunnel ouvert par scroll précédent
-          this._closeTunnel(this.s.prevOpenTunnel);
-
-          // Mise à jour des indices
           this.s.current = clamped;
           this.s.visualIndex = this.textures.length - 1 - clamped;
 
-          // console.log("After update: ", this.s.visualIndex); // Affiche la nouvelle valeur de visualIndex
-
           // Ouverture du nouveau tunnel
           this.currentTunnel = this.tunnels[this.s.visualIndex];
-          this._enterTunnel(this.currentTunnel);
+          // this._enterTunnel(this.currentTunnel);
           this._getTitle(this.s.visualIndex);
-          // const frames = this.currentTunnel.filter(
-          //   (v) => v.cfg.texKind === "frame"
-          // );
-          // frames.forEach((v) => (v.style.opacity = 205));
-
-          // this.s.prevOpenTunnel = frames;
+          this.s.prevHoverTunnel = this.currentTunnel;
         }
 
         this.p5Instance.loop();
@@ -263,29 +247,7 @@ class CanvasManager {
       { passive: false }
     );
   }
-  _computeSide(p) {
-    const w = p.width,
-      h = p.height,
-      cx = w / 2,
-      cy = h / 2;
-    const mx = p.mouseX,
-      my = p.mouseY;
-    const triG = [
-      { x: 0, y: 0 },
-      { x: cx, y: cy },
-      { x: 0, y: h },
-    ];
-    const triD = [
-      { x: w, y: 0 },
-      { x: cx, y: cy },
-      { x: w, y: h },
-    ];
 
-    const isLeft = this.pointInPolygon(mx, my, triG);
-    const isRight = this.pointInPolygon(mx, my, triD);
-    const newSide = isLeft ? "left" : isRight ? "right" : null;
-    return { isLeft, isRight, newSide };
-  }
   preloadAndSetup(p) {
     // ton preload, setup, etc.
     this.setupMouseMove(p);
@@ -302,14 +264,14 @@ class CanvasManager {
     );
   }
   drawTunnel(p) {
-    const xc = [];
+    const vols = [];
     const halfSw = this.sw / 2;
     const halfSh = this.sh / 2;
 
     for (let idx = 0; idx < this.tunnels.length; idx++) {
       const voletList = this.tunnels[idx];
       const z = this.s.base - (this.textures.length - 1 - idx) * this.sw;
-
+      let vol = [];
       for (const volet of voletList) {
         volet.cfg.z = z;
         volet.draw();
@@ -322,9 +284,10 @@ class CanvasManager {
 
         if (z > volet.cfg.w) continue;
 
-        const p1 = z > 0
-          ? { x: isLeftSide ? -halfSw : halfSw, y: -halfSh }
-          : p.screenPosition(x, 0, 0);
+        const p1 =
+          z > 0
+            ? { x: isLeftSide ? -halfSw : halfSw, y: -halfSh }
+            : p.screenPosition(x, 0, 0);
 
         const p2 = p.screenPosition(
           x + (isLeftSide ? volet.cfg.w : -volet.cfg.w),
@@ -332,10 +295,11 @@ class CanvasManager {
           0
         );
 
-        xc.push({ p1: p1.x, p2: p2.x });
+        vol.push({ p1: p1.x, p2: p2.x });
       }
+      vols.push(vol);
     }
-    return xc;
+    return vols;
   }
 
   pointInPolygon(x, y, poly) {
@@ -350,39 +314,9 @@ class CanvasManager {
       if (intersect) inside = !inside;
     }
 
-    // const W = this.p5Instance.width;
-    // const margin = this.computeOfEase(W, 1.11);
-    // const left = margin;
-    // const right = W - margin;
-
-    // // on n'active que si x est à gauche OU à droite
-    // if (x > left && x < right) {
-    //   return false;
-    // }
-
     return inside;
   }
-  computeOfEase(w, exponent = 1.9) {
-    const inMin = 300,
-      outMin = 40;
-    const midIn = 514,
-      outMid = 100;
-    const inMax = 1995,
-      outMax = 712;
-    if (w < midIn) {
-      // 1er segment 300→514 → 40→100
-      let t = (w - inMin) / (midIn - inMin);
-      // on laisse t libre : pour w<inMin t<0 → signed ease si besoin
-      let tt = t < 0 ? -pow(-t, exponent) : pow(t, exponent);
-      return lerp(outMin, outMid, tt);
-    } else {
-      // 2e segment 514→1526 → 100→500
-      let t = (w - midIn) / (inMax - midIn);
-      // **NE PAS** clamp : t>1 → extrapolation beyond outMax
-      let tt = this.p5Instance.pow(t, exponent);
-      return this.p5Instance.lerp(outMid, outMax, tt);
-    }
-  }
+
   _getFoxy(sw) {
     return this.p5Instance.map(
       sw,
