@@ -14,6 +14,7 @@ class CanvasManager {
         prevHoverTunnel: null,
         prevOpenTunnel: null,
         inVolet: false,
+        clickMode: false,
       };
       const styleDatas = [
         ["pointer-events", "none"],
@@ -21,6 +22,7 @@ class CanvasManager {
         ["z-index", "0"],
       ];
       this.s.prevOpenTunnel = null;
+
       p.preload = () => {
         this.textures.push(p.loadImage("../IMG/frame_05.jpg"));
         this.textures.push(p.loadImage("../IMG/frame_06.jpg"));
@@ -30,15 +32,15 @@ class CanvasManager {
         this.textures.push(p.loadImage("../IMG/frame_05.jpg"));
         this.textures.push(p.loadImage("../IMG/p_b.jpg"));
         this.textures.push(p.loadImage("../IMG/p_a.jpg"));
-        this.preloadAndSetup(p);
       };
+
       p.setup = () => {
         this.canvas = p.createCanvas(
           window.innerWidth,
           window.innerHeight,
           p.WEBGL
         );
-
+        this.preloadAndSetup(p);
         styleDatas.forEach((styleData) => {
           this.canvas.style(styleData[0], styleData[1]);
         });
@@ -94,10 +96,11 @@ class CanvasManager {
   }
   _draw(p) {
     if (!this.s.draw) return;
+
     p.clear();
     p.noStroke();
     const corners = this.drawTunnel(p);
-    if (this.s.inVolet) {
+    if (this.s.inVolet && !this.s.clickMode) {
       const mapX = p.map(p.mouseX, 0, this.sw, -this.sw / 2, this.sw / 2);
 
       for (let i = 0; i < corners.length; i++) {
@@ -149,6 +152,7 @@ class CanvasManager {
   }
   setupMouseMove(p) {
     p.mouseMoved = () => {
+      if (this.s.clickMode) return;
       const w = p.width,
         h = p.height,
         cx = w / 2,
@@ -178,47 +182,51 @@ class CanvasManager {
         this.p5Instance.loop();
       } else {
         // this.tunnels.forEach((volet) => volet.filter((frame) => frame.cfg));
-        this.tunnels.forEach((volet) => {
-          volet
-            .filter((frame) => frame.isOpen == true)
-            .forEach((frame) => {
-              frame.close();
-              this.s.draw = true;
-              this.p5Instance.loop();
-            });
-        });
+        if (Array.isArray(this.tunnels)) {
+          this.tunnels.forEach((volet) => {
+            volet
+              .filter((frame) => frame.isOpen == true)
+              .forEach((frame) => {
+                frame.close();
+                // this.s.draw = true;
+                // this.p5Instance.loop();
+              });
+          });
+        }
       }
     };
   }
   setupMouseClicked(p) {
     p.mouseClicked = () => {
-      if (this.s.inVolet == false) return;
-      // Update raw and base position based on current selected frame
-      this.s.raw = this.s.current * this.sw / this.s.scale;
-      this.s.base = this.s.raw * this.s.scale;
-      this.s.draw = true;
+      if (!this.s.inVolet) return;
 
-      // Close previous tunnel if exists
-      if (this.s.prevHoverTunnel) {
-        this.s.prevHoverTunnel
-          .filter(volet => volet.cfg.texKind === "frame")
-          .forEach(volet => {
-        volet.close();
-        volet.sleep();
-          });
-      }
-
-      // Update visual indices
-      this.s.visualIndex = this.textures.length - 1 - this.s.current;
-      console.log( this.s.visualIndex);
-      this.s.scrollFrame = this.tunnels[this.s.visualIndex];
+      const { s, tunnels, textures } = this;
       
-      // Enter new tunnel and update UI
-      this._enterTunnel(this.s.scrollFrame);
-      this._getTitle(this.s.visualIndex);
-      this.s.prevHoverTunnel = this.s.scrollFrame;
+      // Update positions and state
+      s.raw = (s.current * this.sw) / s.scale;
+      s.base = s.raw * s.scale;
+      s.draw = true;
+      s.visualIndex = textures.length - 1 - s.current;
 
-      // }
+      // Handle tunnel transitions
+      s.prevHoverTunnel?.filter(v => v.cfg.texKind === "frame")
+      .forEach(v => {
+        v.close();
+        v.sleep();
+      });
+
+      s.scrollFrame = tunnels[s.visualIndex];
+      this._enterTunnel(s.scrollFrame);
+      this._getTitle(s.visualIndex);
+      s.prevHoverTunnel = s.scrollFrame;
+
+      // Toggle click mode
+      if (!s.clickMode && this.currentTunnel.cfg.z === 0) {
+      this.currentTunnel.isClicked(90);
+      s.clickMode = true;
+      } else {
+      s.clickMode = false;
+      }
     };
   }
   _getTitle(element) {
@@ -239,7 +247,7 @@ class CanvasManager {
       "wheel",
       (e) => {
         e.preventDefault();
-
+        if (this.s.clickMode) return;
         // Mise à jour du raw, base et draw
         this.s.raw = Math.max(0, this.s.raw + e.deltaY);
         this.s.base = this.s.raw * this.s.scale;

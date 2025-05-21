@@ -6,13 +6,14 @@ class Volet {
     // angles
     this.initialAngle = cfg.angle;
     this.targetAngle = cfg.angle;
-    this.animSpeed = 0.2;
+    this.animSpeed = 0.4;
     // opacité
     this.style = {
       // opacity: 105,
       focus: 255,
       sleep: 105,
     };
+
     this.style.opacity = this.style.sleep;
     this.isOpen = false;
     this.fade("close");
@@ -27,6 +28,12 @@ class Volet {
     this.isOpen = true;
     this.fade("open");
     this.targetAngle = this.initialAngle + delta;
+  }
+  isClicked(delta) {
+    const rotate  =  this.cfg.angle>0 ? -delta : delta;
+    
+    this.fade("open");
+    this.targetAngle = this.initialAngle + rotate;
   }
   close() {
     this.fade("close");

@@ -95,3 +95,6 @@ p {
 .scene>a.focus{
     visibility: visible;
 } 
+.projects{
+    display: none;
+}
