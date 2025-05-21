@@ -84,7 +84,7 @@ p {
     flex-direction: column;
     align-items: center;
     justify-content: flex-end;
-    pointer-events: none;
+    /* pointer-events: none; */
 }
 
 .scene>a {
@@ -95,6 +95,7 @@ p {
 .scene>a.focus{
     visibility: visible;
 } 
-.projects{
+.projects.loading{
+    /* visibility: hidden; */
     display: none;
 }
