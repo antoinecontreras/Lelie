@@ -51,7 +51,8 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     /* width: 100vw;
-    height: 100dvh;  */
+    height: 100dvh; 
+    overflow: scroll; */
     margin: 0;
     cursor: crosshair;
     background: linear-gradient(0deg, #efefef 0%, white 41%, white 53%, #bebebe 100%);
@@ -84,7 +85,7 @@ p {
     flex-direction: column;
     align-items: center;
     justify-content: flex-end;
-    /* pointer-events: none; */
+    pointer-events: none;
 }
 
 .scene>a {
@@ -92,10 +93,39 @@ p {
     position: absolute;
     visibility: hidden;
 }
-.scene>a.focus{
+
+.scene>a.focus {
     visibility: visible;
-} 
-.projects.loading{
+}
+
+.projects>.project.loading {
     /* visibility: hidden; */
-    display: none;
+    /* display: none; */
+}
+
+.projects>.project {
+    background: red;
+    flex: 1 0 100vh;
+}
+
+.projects {
+    display: flex;
+    overflow: scroll;
+    height: 100dvh;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    grid-gap: 10px;
+}
+
+.project {
+       display: flex;
+    justify-content: center;
+    text-align: center;
+    /* height: 100dvh; */
+    align-items: center;
+    
+}
+.project p {
+    font-size: 40px;
+
 }

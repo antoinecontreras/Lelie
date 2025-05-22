@@ -40,12 +40,13 @@ class CanvasManager {
           window.innerHeight,
           p.WEBGL
         );
+        const sceneEl = document.querySelector(".canvas-container");
+        this.canvas.parent(sceneEl);
+
         this.preloadAndSetup(p);
         styleDatas.forEach((styleData) => {
           this.canvas.style(styleData[0], styleData[1]);
         });
-        const sceneEl = document.querySelector(".scene");
-        sceneEl.parentNode.insertBefore(this.canvas.elt, sceneEl);
 
         p.clear();
         // p.noLoop();
@@ -201,7 +202,7 @@ class CanvasManager {
       if (!this.s.inVolet) return;
 
       const { s, tunnels, textures } = this;
-      
+
       // Update positions and state
       s.raw = (s.current * this.sw) / s.scale;
       s.base = s.raw * s.scale;
@@ -209,24 +210,22 @@ class CanvasManager {
       s.visualIndex = textures.length - 1 - s.current;
 
       // Handle tunnel transitions
-      s.prevHoverTunnel?.filter(v => v.cfg.texKind === "frame")
-      .forEach(v => {
-        v.close();
-        v.sleep();
-      });
+      s.prevHoverTunnel
+        ?.filter((v) => v.cfg.texKind === "frame")
+        .forEach((v) => {
+          v.close();
+          v.sleep();
+        });
 
       s.scrollFrame = tunnels[s.visualIndex];
       this._enterTunnel(s.scrollFrame);
       this._getTitle(s.visualIndex);
       s.prevHoverTunnel = s.scrollFrame;
 
-      // Toggle click mode
       if (!s.clickMode && this.currentTunnel.cfg.z === 0) {
-      this.currentTunnel.isClicked(90);
-      s.clickMode = true;
-      } else {
-      s.clickMode = false;
-      }
+        this.currentTunnel.isClicked(90);
+        s.clickMode = true;
+      } else s.clickMode = false;
     };
   }
   _getTitle(element) {
@@ -246,8 +245,8 @@ class CanvasManager {
     window.addEventListener(
       "wheel",
       (e) => {
-        e.preventDefault();
         if (this.s.clickMode) return;
+        e.preventDefault();
         // Mise à jour du raw, base et draw
         this.s.raw = Math.max(0, this.s.raw + e.deltaY);
         this.s.base = this.s.raw * this.s.scale;
