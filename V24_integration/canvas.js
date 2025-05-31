@@ -376,13 +376,13 @@ class CanvasManager {
         angle: -90,
         swapUV: false,
       },
-      // {
-      //   texKind: "merged",
-      //   x: this.sw / 2,
-      //   y: this.sh / 2,
-      //   angle: 0,
-      //   swapUV: false,
-      // },
+      {
+        texKind: "merged",
+        x: this.sw / 2,
+        y: this.sh / 2,
+        angle: 0,
+        swapUV: false,
+      },
     ];
   }
 
