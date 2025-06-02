@@ -1,0 +1,137 @@
+@import url(https://fonts.cdnfonts.com/css/w95fa);
+
+@font-face {
+    src: url('../FONTS/NeueBit-Regular.ttf');
+    font-family: neue;
+}
+
+@font-face {
+    src: url('../FONTS/PPMondwest-Regular.otf');
+    font-family: mondwest;
+}
+
+:root {
+    --activeR: 0deg;
+    --sizeWall: 300vw;
+    --halfSizeWall: calc(var(--sizeWall) / 2);
+    --animation-duration: 400ms;
+    --curve: linear;
+    --scroll-depth: 0vw;
+    --base-translate-x: calc(var(--halfSizeWall) * 0.5);
+    --base-translate-z: calc(var(--scroll-depth) + var(--halfSizeWall) * -1);
+    --base-rotate-y: rotateY(-90.001deg);
+    --left-translate-z: calc(var(--scroll-depth) + var(--sizeWall) * -1);
+    --left-rotate-y: rotateY(90.001deg);
+    --left-translate-x: calc(var(--halfSizeWall) * -0.5);
+    --left-rotate-deg: 90.001deg;
+    --perspective: 100vw;
+    --g_margin: 40px;
+    --g_marginHalf: calc(40px / 4);
+    --font-size: .9rem;
+    --word: "tesdddt";
+    --grey: #ccc;
+    --dark_grey: #838383;
+    --active_color: rgb(153, 255, 0);
+    --scale: 1;
+    --border-thickness: 1px;
+    --color-black: rgb(0, 0, 0);
+}
+
+html {
+    overflow: hidden;
+}
+
+body {
+    font-family: "Martian Mono", monospace;
+    font-optical-sizing: auto;
+    font-weight: 100;
+    font-style: normal;
+    font-variation-settings:
+        "wdth" 112.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* width: 100vw;
+    height: 100dvh; 
+    overflow: scroll; */
+    margin: 0;
+    cursor: crosshair;
+    background: linear-gradient(0deg, #efefef 0%, white 41%, white 53%, #bebebe 100%);
+}
+
+
+
+p {
+    font-size: var(--font-size);
+    line-height: var(--font-size);
+    margin: calc(var(--font-size) / 2) 0;
+}
+
+.home {
+
+    z-index: 100000;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100px;
+    height: 100px;
+}
+
+.scene {
+    top: 0;
+    position: absolute;
+    width: 100vw;
+    display: flex;
+    /* height: calc(100dvh - var(--g_marginHalf)); */
+    height: 100dvh ;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    pointer-events: none;
+}
+
+.scene>a {
+    pointer-events: all;
+    position: absolute;
+    visibility: hidden;
+    color: black;
+        padding-bottom: 2px;
+        background: white;
+    text-decoration: none;
+}
+
+.scene>a.focus {
+    visibility: visible;
+}
+
+.projects>.project.loading {
+    /* visibility: hidden; */
+    /* display: none; */
+}
+
+.projects>.project {
+    background: red;
+    flex: 1 0 100vh;
+}
+
+.projects {
+    display: flex;
+    overflow: scroll;
+    height: 100dvh;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    grid-gap: 10px;
+}
+
+.project {
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    /* height: 100dvh; */
+    align-items: center;
+
+}
+
+.project p {
+    font-size: 40px;
+
+}

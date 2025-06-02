@@ -67,7 +67,7 @@ class CanvasManager {
         this.s.scale = this.sw / 3000;
         this.c = this._initCamera(p);
         this.s.visualIndex = this.textures.length - 1;
-        this.panelOffset = (this.textures.length - 1) ;
+        // this.panelOffset = (this.textures.length - 1) ;
         addScreenPositionFunction(p);
         this._updateVoletsConfig();
         this.tunnels = this.textures.map((frameTex, idx) => {
@@ -103,17 +103,16 @@ class CanvasManager {
     const corners = this.drawTunnel(p);
     if (this.s.inVolet && !this.s.clickMode) {
       const mapX = p.map(p.mouseX, 0, this.sw, -this.sw / 2, this.sw / 2);
-
       for (let i = 0; i < corners.length; i++) {
         const leftSide = corners[i][0];
         const rightSide = corners[i][1];
         if (!leftSide && !rightSide) continue;
 
         const side = this.s.inVolet === "left" ? leftSide : rightSide;
+        console.log(side);
         const isInSide =
           mapX >= Math.min(side.p1, side.p2) &&
           mapX <= Math.max(side.p1, side.p2);
-
         if (isInSide) {
           if (
             this.activeTunnel !== this.s.prevOpenTunnel &&
@@ -262,9 +261,9 @@ class CanvasManager {
         this.s.draw = true;
 
         // Calcul du nouvel index et clamp
-        const step = Math.floor(this.s.base / this.sw);
+        const step = Math.floor(this.s.base / this.sw*2);
         const clamped = Math.max(0, Math.min(this.textures.length - 1, step));
-
+console.log(step, clamped);
         if (clamped !== this.s.current) {
           // Fermeture du tunnel précédent
 
@@ -308,18 +307,18 @@ class CanvasManager {
 
     for (let idx = 0; idx < this.tunnels.length; idx++) {
       const voletList = this.tunnels[idx];
-      const z = this.s.base - (this.textures.length - 1 - idx) * this.sw;
+      const z = this.s.base - (this.textures.length - 1 - idx) * this.sw/2;
       let vol = [];
       for (const volet of voletList) {
         volet.cfg.z = z;
         volet.draw();
+          
 
         const angle = volet.initialAngle;
         if (angle !== -90 && angle !== 90) continue;
 
         const isLeftSide = angle === 90;
-        const x = isLeftSide ? 0 : volet.cfg.w;
-
+        const x = isLeftSide ? 0: volet.cfg.w/2;
         if (z > volet.cfg.w) continue;
 
         const p1 =
@@ -328,7 +327,8 @@ class CanvasManager {
             : p.screenPosition(x, 0, 0);
 
         const p2 = p.screenPosition(
-          x + (isLeftSide ? volet.cfg.w : -volet.cfg.w),
+          // x + (isLeftSide ? volet.cfg.w/2 : -volet.cfg.w),
+          x + (isLeftSide ? volet.cfg.w/2 : -volet.cfg.w),
           20,
           0
         );

@@ -18,8 +18,8 @@ class Volet {
     } else {
       this.style = {
         // opacity: 105,
-        focus: 145,
-        sleep: 125,
+        focus: 105,
+        sleep: 55,
       };
     }
 
@@ -54,7 +54,7 @@ class Volet {
     }
   }
 
-  draw() {
+  draw(dy_width) {
     this._animate();
     // console.log("inside : " + this.p.frameCount);
     const p = this.p;
@@ -64,7 +64,10 @@ class Volet {
     p.translate(0, 0, z);
     p.translate(-w / 2, -h / 2);
     p.translate(x, y);
+
     p.rotateY((angle * Math.PI) / 180);
+    if (this.initialAngle == -90) p.translate(w / 2, 0);
+
     p.translate(-x, -y);
 
     // applique la tint + opacité
@@ -85,56 +88,38 @@ class Volet {
       p.vertex(0, uH, 0, 1);
       p.endShape(p.CLOSE);
     } else {
-      const uW = swapUV ? h : w;
+      const uW = swapUV ? h : w / 2;
       const uH = swapUV ? w : h;
       const texW = this.tex.width;
       const texH = this.tex.height;
       const ratioTex = texW / texH; // ratio image
       const ratioRect = uW / uH; // ratio du plan cible
-
       let uMin = 0,
         uMax = 1;
       let vMin = 0,
         vMax = 1;
 
       if (ratioTex > ratioRect) {
-        // Cas “paysage” : l’image est plus large que le plan
-        // => on force la hauteur de l’image à recouvrir le plan,
-        //    on coupe les côtés gauche/droit
         const uSpan = ratioRect / ratioTex;
-        // Calculer la bande centrale en U
-        //   Exemple : si uTex/ vTex = 2 et plane/r = 1, uSpan = 1/2 = 0.5
         uMin = (1 - uSpan) / 2; // 0.25
         uMax = uMin + uSpan; // 0.75
-        // On conserve toute la hauteur en V
         vMin = 0;
         vMax = 1;
       } else {
-        // Cas “portrait” ou “carré” : l’image est plus haute (ou même ratio)
-        // => on force la largeur de l’image à recouvrir le plan,
-        //    on coupe le haut/bas
         const vSpan = ratioTex / ratioRect;
-        //   Exemple : si ratioTex = 0.5 et ratioRect = 1, vSpan = 0.5
         vMin = (1 - vSpan) / 2; // 0.25
         vMax = vMin + vSpan; // 0.75
-        // On conserve toute la largeur en U
         uMin = 0;
         uMax = 1;
       }
-
-      // 6) Application de la texture et dessin du quad avec 4 vertex
       p.noStroke();
       p.textureMode(p.NORMAL);
       p.texture(this.tex);
 
       p.beginShape(p.QUADS);
-      // coin haut-gauche : (0,0) local → UV = (uMin, vMin)
       p.vertex(0, 0, uMin, vMin);
-      // coin haut-droit : (uW, 0) local → UV = (uMax, vMin)
       p.vertex(uW, 0, uMax, vMin);
-      // coin bas-droit : (uW, uH) local → UV = (uMax, vMax)
       p.vertex(uW, uH, uMax, vMax);
-      // coin bas-gauche : (0, uH) local → UV = (uMin, vMax)
       p.vertex(0, uH, uMin, vMax);
       p.endShape(p.CLOSE);
     }

@@ -419,7 +419,7 @@ table th {
     grid-template-rows: calc(50vh - .9rem * 7) auto;
     grid-gap: calc(.9rem * 2);
     align-items: start;
-    background: rgb(159, 41, 41);
+    background: rgb(238, 238, 238);
     /* padding: calc(var(--g_margin) / 4) calc(var(--g_margin) / 2) ; */
     padding: calc(var(--g_margin) / 4) 0;
     width: calc(50% - .9rem * 2);
