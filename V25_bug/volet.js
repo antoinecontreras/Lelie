@@ -54,11 +54,11 @@ class Volet {
     }
   }
 
-  draw(dy_width) {
+  draw() {
     this._animate();
     // console.log("inside : " + this.p.frameCount);
     const p = this.p;
-    let { w, h, x, y, z, angle, swapUV } = this.cfg;
+    let { w, h, wall, ancer, x, y, z, angle, swapUV } = this.cfg;
 
     p.push();
     p.translate(0, 0, z);
@@ -66,10 +66,9 @@ class Volet {
     p.translate(x, y);
 
     p.rotateY((angle * Math.PI) / 180);
-    if (this.initialAngle == -90) p.translate(w / 2, 0);
+    // if (this.initialAngle == -90) p.translate(w / 2, 0);
 
     p.translate(-x, -y);
-
     // applique la tint + opacité
     p.tint(255, this.style.opacity);
     // p.tint(p.saturation(0, 255, 191.5), this.style.opacity);
@@ -77,6 +76,7 @@ class Volet {
     if (this.cfg.texKind == "merged") {
       const uW = swapUV ? h : w;
       const uH = swapUV ? w : h;
+     
       p.noStroke();
       p.textureMode(p.NORMAL);
 
@@ -88,8 +88,9 @@ class Volet {
       p.vertex(0, uH, 0, 1);
       p.endShape(p.CLOSE);
     } else {
-      const uW = swapUV ? h : w / 2;
-      const uH = swapUV ? w : h;
+
+      const uW = swapUV ? h : wall ;
+      const uH = swapUV ? wall : h;
       const texW = this.tex.width;
       const texH = this.tex.height;
       const ratioTex = texW / texH; // ratio image
@@ -115,12 +116,11 @@ class Volet {
       p.noStroke();
       p.textureMode(p.NORMAL);
       p.texture(this.tex);
-
       p.beginShape(p.QUADS);
-      p.vertex(0, 0, uMin, vMin);
-      p.vertex(uW, 0, uMax, vMin);
-      p.vertex(uW, uH, uMax, vMax);
-      p.vertex(0, uH, uMin, vMax);
+      p.vertex(ancer, 0, uMin, vMin);
+      p.vertex(uW+ancer, 0, uMax, vMin);
+      p.vertex(uW+ancer, uH, uMax, vMax);
+      p.vertex(ancer, uH, uMin, vMax);
       p.endShape(p.CLOSE);
     }
 

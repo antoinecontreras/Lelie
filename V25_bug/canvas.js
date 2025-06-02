@@ -72,6 +72,8 @@ class CanvasManager {
         this._updateVoletsConfig();
         this.tunnels = this.textures.map((frameTex, idx) => {
           return this.VOLETS_CFG.map((cfg) => {
+            console.log();
+            cfg.ancer = cfg.angle > 0 ? 0 : cfg.wall;
             const tex = cfg.texKind === "merged" ? this.mergedTri : frameTex;
             return new Volet(p, tex, {
               ...cfg,
@@ -109,7 +111,6 @@ class CanvasManager {
         if (!leftSide && !rightSide) continue;
 
         const side = this.s.inVolet === "left" ? leftSide : rightSide;
-        console.log(side);
         const isInSide =
           mapX >= Math.min(side.p1, side.p2) &&
           mapX <= Math.max(side.p1, side.p2);
@@ -126,8 +127,10 @@ class CanvasManager {
               this.p5Instance.loop();
             });
           }
-          if (this.s.current !== this.textures.length - 1 - i)
+          if (this.s.current !== this.textures.length - 1 - i) {
+            console.log(this.s.current , i);
             this.s.current = this.textures.length - 1 - i;
+          }
 
           const tunnelIndex = this.s.inVolet === "left" ? 0 : 1;
           this.currentTunnel = this.tunnels[i][tunnelIndex];
@@ -212,10 +215,7 @@ class CanvasManager {
       const { s, tunnels, textures } = this;
 
       // Update positions and state
-      s.raw = (s.current * this.sw) / s.scale;
-      s.base = s.raw * s.scale;
-      s.draw = true;
-      s.visualIndex = textures.length - 1 - s.current;
+      // console.log(s.current);
 
       // Handle tunnel transitions
       s.prevHoverTunnel
@@ -229,6 +229,11 @@ class CanvasManager {
       this._enterTunnel(s.scrollFrame);
       this._getTitle(s.visualIndex);
       s.prevHoverTunnel = s.scrollFrame;
+
+      s.raw = (s.current * this.sw) / 2 / s.scale;
+      s.base = s.raw * s.scale;
+      s.draw = true;
+      s.visualIndex = textures.length - 1 - s.current;
 
       if (!s.clickMode && this.currentTunnel.cfg.z === 0) {
         this.currentTunnel.isClicked(90);
@@ -261,9 +266,10 @@ class CanvasManager {
         this.s.draw = true;
 
         // Calcul du nouvel index et clamp
-        const step = Math.floor(this.s.base / this.sw*2);
+        // const step = Math.floor(this.s.base / this.sw*2);
+        const step = Math.floor((this.s.base / this.sw) * 2);
         const clamped = Math.max(0, Math.min(this.textures.length - 1, step));
-console.log(step, clamped);
+
         if (clamped !== this.s.current) {
           // Fermeture du tunnel précédent
 
@@ -307,20 +313,19 @@ console.log(step, clamped);
 
     for (let idx = 0; idx < this.tunnels.length; idx++) {
       const voletList = this.tunnels[idx];
-      const z = this.s.base - (this.textures.length - 1 - idx) * this.sw/2;
+      const z = this.s.base - ((this.textures.length - 1 - idx) * this.sw) / 2;
       let vol = [];
       for (const volet of voletList) {
         volet.cfg.z = z;
         volet.draw();
-          
 
         const angle = volet.initialAngle;
         if (angle !== -90 && angle !== 90) continue;
 
         const isLeftSide = angle === 90;
-        const x = isLeftSide ? 0: volet.cfg.w/2;
+        // console.log(volet.cfg.ancer, volet.cfg.w);
+        const x = isLeftSide ? 0 : volet.cfg.w;
         if (z > volet.cfg.w) continue;
-
         const p1 =
           z > 0
             ? { x: isLeftSide ? -halfSw : halfSw, y: -halfSh }
@@ -328,10 +333,14 @@ console.log(step, clamped);
 
         const p2 = p.screenPosition(
           // x + (isLeftSide ? volet.cfg.w/2 : -volet.cfg.w),
-          x + (isLeftSide ? volet.cfg.w/2 : -volet.cfg.w),
+          x + (isLeftSide ? halfSw : -halfSw),
           20,
           0
         );
+        p.fill(255);
+        p.circle(p1.x, p1.y, 10);
+        p.fill(0);
+        p.circle(p2.x, p2.y, 10);
 
         vol.push({ p1: p1.x, p2: p2.x });
       }
@@ -377,18 +386,26 @@ console.log(step, clamped);
 
   _updateVoletsConfig() {
     this.VOLETS_CFG = [
-      { texKind: "frame", x: 0, y: this.sh / 2, angle: 90, swapUV: false },
+      {
+        texKind: "frame",
+        x: 0,
+        y: this.sh / 2,
+        wall: this.sw / 2,
+        angle: 90,
+        swapUV: false,
+      },
       {
         texKind: "frame",
         x: this.sw,
         y: 0,
+        wall: this.sw / 2,
         angle: -90,
         swapUV: false,
       },
       {
         texKind: "merged",
-        x: this.sw / 2,
-        y: this.sh / 2,
+        x: this.sw,
+        y: this.sh,
         angle: 0,
         swapUV: false,
       },
