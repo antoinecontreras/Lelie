@@ -20,6 +20,7 @@ class CanvasManager {
         ["pointer-events", "none"],
         ["image-rendering", "pixelated"],
         ["z-index", "0"],
+        ["border-radius", "1.4rem"],
       ];
       this.s.prevOpenTunnel = null;
 
@@ -28,10 +29,10 @@ class CanvasManager {
         this.textures.push(p.loadImage("../IMG/frame_06.jpg"));
         this.textures.push(p.loadImage("../IMG/p_a.jpg"));
         this.textures.push(p.loadImage("../IMG/p_b.jpg"));
-        this.textures.push(p.loadImage("../IMG/frame_06.jpg"));
         this.textures.push(p.loadImage("../IMG/frame_05.jpg"));
         this.textures.push(p.loadImage("../IMG/p_b.jpg"));
         this.textures.push(p.loadImage("../IMG/p_a.jpg"));
+        this.textures.push(p.loadImage("../IMG/frame_06.jpg"));
       };
 
       p.setup = () => {
@@ -105,6 +106,7 @@ class CanvasManager {
     const corners = this.drawTunnel(p);
     if (this.s.inVolet && !this.s.clickMode) {
       const mapX = p.map(p.mouseX, 0, this.sw, -this.sw / 2, this.sw / 2);
+
       for (let i = 0; i < corners.length; i++) {
         const leftSide = corners[i][0];
         const rightSide = corners[i][1];
@@ -128,7 +130,6 @@ class CanvasManager {
             });
           }
           if (this.s.current !== this.textures.length - 1 - i) {
-            console.log(this.s.current , i);
             this.s.current = this.textures.length - 1 - i;
           }
 
@@ -209,8 +210,8 @@ class CanvasManager {
     };
   }
   setupMouseClicked(p) {
-    p.mouseClicked = () => {
-      if (!this.s.inVolet) return;
+    p.mouseClicked = (e) => {
+      if (!this.s.inVolet || e.target.id !== "canvasForHTML") return;
 
       const { s, tunnels, textures } = this;
 
@@ -237,6 +238,8 @@ class CanvasManager {
 
       if (!s.clickMode && this.currentTunnel.cfg.z === 0) {
         this.currentTunnel.isClicked(90);
+        // console.log("inside click");
+
         s.clickMode = true;
       } else s.clickMode = false;
     };
@@ -314,37 +317,37 @@ class CanvasManager {
     for (let idx = 0; idx < this.tunnels.length; idx++) {
       const voletList = this.tunnels[idx];
       const z = this.s.base - ((this.textures.length - 1 - idx) * this.sw) / 2;
-      let vol = [];
-      for (const volet of voletList) {
-        volet.cfg.z = z;
-        volet.draw();
+      if (z < halfSw) {
+        let vol = [];
+        for (const volet of voletList) {
+          volet.cfg.z = z;
+          volet.draw();
 
-        const angle = volet.initialAngle;
-        if (angle !== -90 && angle !== 90) continue;
+          const angle = volet.initialAngle;
+          if (angle !== -90 && angle !== 90) continue;
 
-        const isLeftSide = angle === 90;
-        // console.log(volet.cfg.ancer, volet.cfg.w);
-        const x = isLeftSide ? 0 : volet.cfg.w;
-        if (z > volet.cfg.w) continue;
-        const p1 =
-          z > 0
-            ? { x: isLeftSide ? -halfSw : halfSw, y: -halfSh }
-            : p.screenPosition(x, 0, 0);
+          const isLeftSide = angle === 90;
+          // console.log(volet.cfg.ancer, volet.cfg.w);
+          const x = isLeftSide ? 0 : volet.cfg.w;
 
-        const p2 = p.screenPosition(
-          // x + (isLeftSide ? volet.cfg.w/2 : -volet.cfg.w),
-          x + (isLeftSide ? halfSw : -halfSw),
-          20,
-          0
-        );
-        p.fill(255);
-        p.circle(p1.x, p1.y, 10);
-        p.fill(0);
-        p.circle(p2.x, p2.y, 10);
+          // console.log(z);
+          const p1 =
+            z > 0
+              ? { x: isLeftSide ? -halfSw : halfSw, y: -halfSh }
+              : p.screenPosition(x, 0, 0);
 
-        vol.push({ p1: p1.x, p2: p2.x });
+          const p2 = p.screenPosition(
+            // x + (isLeftSide ? volet.cfg.w/2 : -volet.cfg.w),
+            x + (isLeftSide ? halfSw : -halfSw),
+            20,
+            0
+          );
+
+          vol.push({ p1: p1.x, p2: p2.x });
+        }
+
+        vols.push(vol);
       }
-      vols.push(vol);
     }
     return vols;
   }

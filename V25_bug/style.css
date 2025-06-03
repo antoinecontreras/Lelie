@@ -55,7 +55,7 @@ body {
     overflow: scroll; */
     margin: 0;
     cursor: crosshair;
-    background: linear-gradient(0deg, #efefef 0%, white 41%, white 53%, #bebebe 100%);
+    /* background: linear-gradient(0deg, #efefef 0%, white 41%, white 53%, #bebebe 100%); */
 }
 
 
@@ -76,13 +76,25 @@ p {
     height: 100px;
 }
 
+.canvas-container {
+    top: 0;
+    height: 100%;
+    width: 100%;
+    border-radius: 20px;
+    background: linear-gradient(0deg, #efefef 0%, white 41%, white 53%, #bebebe 100%);
+}
+
+.canvas-container.scrollMode {
+    /* position: sticky; */
+}
+
 .scene {
     top: 0;
     position: absolute;
     width: 100vw;
     display: flex;
     /* height: calc(100dvh - var(--g_marginHalf)); */
-    height: 100dvh ;
+    height: 100dvh;
     flex-direction: column;
     align-items: center;
     justify-content: flex-end;
@@ -94,8 +106,8 @@ p {
     position: absolute;
     visibility: hidden;
     color: black;
-        padding-bottom: 2px;
-        background: white;
+    padding-bottom: 2px;
+    background: white;
     text-decoration: none;
 }
 
@@ -109,7 +121,7 @@ p {
 }
 
 .projects>.project {
-    background: red;
+    /* background: rgb(255, 255, 255); */
     flex: 1 0 100vh;
 }
 
@@ -119,19 +131,105 @@ p {
     height: 100dvh;
     flex-direction: column;
     flex-wrap: nowrap;
-    grid-gap: 10px;
+     overscroll-behavior: auto; 
+    /* grid-gap: 10px; */
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
 }
 
 .project {
-    display: flex;
-    justify-content: center;
-    text-align: center;
-    /* height: 100dvh; */
-    align-items: center;
+    height: 100vh;
+    overflow: scroll;
 
+    grid-template-columns: 1fr 1fr;
+    display: grid;
+
+    flex-direction: row;
+    position: relative;
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
+      pointer-events: none;
+      overflow-y: auto;   
 }
 
-.project p {
-    font-size: 40px;
+.project.scrollMode {
+    /* pointer-events: all; */
+    margin-top: -100vh;
+    /* position: sticky; */
+    top: 0;
+}
+.project.scrollMode .flat-content{
+    padding-top: 100vh;
+}
+.project.left .flat-content{
+    grid-column: 1;
+}
+.flat-content {
+    pointer-events: all;
+    background: white;
+    grid-column: 2;
+    display: grid;
+    position: relative;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: calc(50vh - .9rem * 7) auto;
+    grid-gap: calc(.9rem * 2);
+    align-items: start;
 
+    padding: calc(var(--g_margin) / 4) 0;
+
+    /* width: calc(50% - 0px); */
+}
+
+.p_header {
+    grid-column: span 3 / span 3;
+}
+
+.p_images {
+    grid-column: span 2 / span 2;
+    grid-row-start: 4;
+    display: flex;
+}
+
+.p_images .image_content {
+    width: 50%;
+}
+
+.p_video {
+    grid-column: span 3 / span 3;
+    grid-row-start: 5;
+}
+
+.v_player {
+    white-space: nowrap;
+    font-size: var(--font-size);
+    text-transform: lowercase;
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+}
+
+.dots {
+    flex-grow: 1;
+    border-bottom: 1px dotted var(--grey);
+    margin: 0 0.45rem;
+    position: relative;
+}
+
+.specs div {
+    font-size: var(--font-size);
+    text-transform: lowercase;
+    display: flex;
+    align-items: baseline;
+    white-space: nowrap;
+}
+
+.specs div::before {
+    content: ">>";
+    color: #4d4d4d;
+    left: 0;
+    pointer-events: none;
 }
