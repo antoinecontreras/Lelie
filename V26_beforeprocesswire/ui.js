@@ -19,10 +19,22 @@
       pj: document.querySelector("div.projects"),
       pages: document.querySelectorAll("div.projects >.project"),
       canvas: document.querySelector("#canvasForHTML"),
+      back: document.querySelector("span#back"),
       baseScroll: 0,
     };
     dom.pj.classList.remove("loading");
-
+    dom.back.addEventListener("click", (e) => {
+      dom.pj.classList.remove("focus");
+      const target = dom.pj.querySelector(
+        `.projects .project#${"t" + CANVAS_LAYER.s.visualIndex}`
+      );
+      target.scrollTo({ top: 0, behavior: "instant" });
+      // target.scrollTo({ top: 0, behavior: "instant" });
+      CANVAS_LAYER.s.clickMode = false;
+      dom.pages.forEach((el) => el.classList.remove("scrollMode"));
+      CANVAS_LAYER.s.draw = true;
+      CANVAS_LAYER._draw();
+    });
     dom.pj.addEventListener("scroll", (e) => {
       if (dom.baseScroll > e.target.scrollTop) {
         e.preventDefault();
@@ -54,14 +66,6 @@
           target.classList.add("scrollMode");
           if (target) replaceCanvas(target);
           dom.pj.classList.add("focus");
-      //     target.addEventListener("scroll", (event) => {
-      //         // if(event.target.scrollTop >= event.target.scrollHeight - window.innerHeight)
-      //         //   dom.pj.classList.add("focus");
-
-      // }, true);
- 
-
-            
 
           return;
         }
@@ -69,10 +73,10 @@
         if (event.target == dom.canvas) {
           // dom.pj.scrollIntoView(dom.baseScroll);
           target.scrollTo({ top: 0, behavior: "instant" });
-          dom.pages.forEach((el) => el.classList.remove("scrollMode"));
 
+          dom.pages.forEach((el) => el.classList.remove("scrollMode"));
+          dom.pj.scrollIntoView(dom.baseScroll);
           //  target.classList.remove("scrollMode");
-          // dom.pj.scrollIntoView(dom.baseScroll);
 
           // dom.canvas.scrollIntoView({ behavior: "instant", block: "center" });
           // dom.canvas.classList.remove("scrollMode");

@@ -59,10 +59,30 @@ body {
 }
 
 
+
 p {
     font-size: var(--font-size);
     line-height: var(--font-size);
     margin: calc(var(--font-size) / 2) 0;
+}
+.projects.focus+.scene+span#back{
+    visibility: visible;
+}
+span#back {visibility: hidden;
+    position: fixed;
+    top: calc(var(--g_margin) / 4);
+    left: calc(var(--g_margin) / 4);
+    width: calc(var(--g_margin) / 2);
+    height: calc(var(--g_margin) / 1);
+    background-color: white;
+    border-radius: 14px;
+    z-index: 1000;
+    opacity: 0.7;
+}
+
+span#back:hover {
+    opacity: 1;
+    cursor: pointer;
 }
 
 .home {
@@ -105,9 +125,12 @@ p {
     position: absolute;
     visibility: hidden;
     color: black;
-    padding-bottom: 2px;
+    margin-bottom: 6px;
     background: white;
     text-decoration: none;
+    border-radius: 30px;
+    padding: 2px 8px;
+    opacity: 0.7;
 }
 
 .scene>a.focus {
@@ -125,7 +148,7 @@ p {
 }
 
 .projects {
-     
+
     display: flex;
     overflow: scroll;
     /* overflow-y: hidden; */
@@ -141,7 +164,7 @@ p {
 }
 
 .projects.focus {
-     scroll-snap-type: y mandatory;
+    scroll-snap-type: y mandatory;
     /* overflow-y: scroll; */
 }
 
@@ -154,7 +177,7 @@ p {
     height: 100vh;
     overflow-y: scroll;
     grid-template-columns: 1fr 1fr;
-      scroll-snap-align: center;
+    scroll-snap-align: center;
     display: grid;
 
     flex-direction: row;
@@ -189,7 +212,7 @@ p {
 }
 
 .flat-content {
-   
+
     pointer-events: all;
     background: rgb(255 255 255 / 85%);
     backdrop-filter: blur(16px);
@@ -199,7 +222,7 @@ p {
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: calc(50vh - .9rem * 7) auto;
     grid-gap: calc(var(--g_margin) / 4);
-  
+
 
     padding: calc(var(--g_margin) / 4);
 
